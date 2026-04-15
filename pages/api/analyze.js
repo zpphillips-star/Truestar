@@ -25,6 +25,11 @@ export default async function handler(req, res) {
     });
 
     const data = await response.json();
+    
+    // Log what we get back from Claude
+    console.log("Claude response status:", response.status);
+    console.log("Claude raw data:", JSON.stringify(data));
+    
     res.status(200).json(data);
   } catch (error) {
     console.error("Analysis failed:", error);
