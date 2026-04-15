@@ -180,6 +180,7 @@ export default function Home() {
 
   const searchRestaurants = async () => {
     if (!query || !location) return;
+
     setSearching(true);
     setError(null);
 
@@ -225,7 +226,9 @@ export default function Home() {
       const revRes = await fetch(`/api/reviews?placeId=${selected.place_id}`);
       const revData = await revRes.json();
 
-      if (!revRes.ok) throw new Error(revData.error || "Failed to fetch reviews");
+      if (!revRes.ok) {
+        throw new Error(revData.error || "Failed to fetch reviews");
+      }
 
       const reviews = revData.result?.reviews || [];
 
@@ -233,7 +236,8 @@ export default function Home() {
         setResult({
           trueScore: selected.rating || 3,
           headline: "Not enough review data to analyze.",
-          whyAdjusted: "No review text was available, so there wasn't enough evidence to adjust the score based on your preferences.",
+          whyAdjusted:
+            "No review text was available, so there wasn't enough evidence to adjust the score based on your preferences.",
           keptSummary: "No reviews were available to count toward your score.",
           omittedSummary: "Nothing was omitted because no reviews were available.",
           categoryScores: {},
@@ -248,7 +252,10 @@ export default function Home() {
       }
 
       const activeWeights = CATEGORIES.filter((c) => weights[c.id] > 0);
-      const weightDesc = activeWeights.map((c) => `${c.label}: ${weights[c.id]}%`).join(", ");
+      const weightDesc = activeWeights
+        .map((c) => `${c.label}: ${weights[c.id]}%`)
+        .join(", ");
+
       const reviewsText = reviews
         .map((r, i) => `Review ${i} (${r.rating} stars): "${r.text}"`)
         .join("\n");
@@ -349,9 +356,9 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
       const safeCategoryMentions = parsed.categoryMentions || {};
       const safeReviewTags = Array.isArray(parsed.reviewTags) ? parsed.reviewTags : [];
 
-      // Recalculate trueScore ourselves
       let scoreSum = 0;
       let weightSum = 0;
+
       activeWeights.forEach((c) => {
         const s = safeCategoryScores[c.id];
         if (s != null && !isNaN(Number(s))) {
@@ -361,7 +368,9 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
       });
 
       const computedTrueScore =
-        weightSum > 0 ? Math.round((scoreSum / weightSum) * 10) / 10 : selected.rating;
+        weightSum > 0
+          ? Math.round((scoreSum / weightSum) * 10) / 10
+          : selected.rating;
 
       const normalized = {
         reviewTags: safeReviewTags,
@@ -409,7 +418,8 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
     setError(null);
   };
 
-  const diff = result && selected ? +(result.trueScore - selected.rating).toFixed(1) : 0;
+  const diff =
+    result && selected ? +(result.trueScore - selected.rating).toFixed(1) : 0;
 
   const reviewsWithTags =
     result?._reviews?.map((review, index) => {
@@ -448,9 +458,14 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
       })
     : [];
 
-  const missingActiveCategories = CATEGORIES.filter(
-    (c) => weights[c.id] > 0 && (result?.categoryScores?.[c.id] == null || isNaN(Number(result?.categoryScores?.[c.id])))
-  );
+  const missingActiveCategories = result
+    ? CATEGORIES.filter(
+        (c) =>
+          weights[c.id] > 0 &&
+          (result.categoryScores?.[c.id] == null ||
+            isNaN(Number(result.categoryScores?.[c.id])))
+      )
+    : [];
 
   return (
     <div
@@ -563,6 +578,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 Find a restaurant
               </span>
             </div>
+
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -579,6 +595,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 marginBottom: 10,
               }}
             />
+
             <input
               value={location}
               onChange={(e) => setLocation(e.target.value)}
@@ -596,6 +613,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 marginBottom: 12,
               }}
             />
+
             <button
               onClick={searchRestaurants}
               disabled={searching || !query || !location}
@@ -618,85 +636,97 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
         </div>
 
         {/* Step 2 — Pick */}
-        {(stage === "pick" || stage === "weights" || stage === "result") && searchResults.length > 0 && (
-          <div
-            style={{
-              background: "#fff",
-              borderRadius: 20,
-              boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
-              border: `2px solid ${stage === "pick" ? "#c0392b" : "#ece9e4"}`,
-              marginBottom: 14,
-            }}
-          >
-            <div style={{ padding: "18px 22px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
-                    background: stage === "pick" ? "#c0392b" : "#1a1a1a",
-                    color: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    fontFamily: "sans-serif",
-                    flexShrink: 0,
-                  }}
-                >
-                  {stage !== "pick" ? "✓" : "2"}
-                </span>
-                <span
-                  style={{
-                    fontFamily: "sans-serif",
-                    fontWeight: 700,
-                    fontSize: 15,
-                    color: "#1a1a1a",
-                  }}
-                >
-                  Pick a restaurant
-                </span>
-              </div>
-              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                {searchResults.map((r) => (
-                  <div
-                    key={r.place_id}
-                    onClick={() => pickRestaurant(r)}
+  {(stage === "pick" || stage === "weights" || stage === "result") &&
+          searchResults.length > 0 && (
+            <div
+              style={{
+                background: "#fff",
+                borderRadius: 20,
+                boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
+                border: `2px solid ${stage === "pick" ? "#c0392b" : "#ece9e4"}`,
+                marginBottom: 14,
+              }}
+            >
+              <div style={{ padding: "18px 22px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
+                  <span
                     style={{
-                      padding: "12px 14px",
-                      borderRadius: 12,
-                      border: `1.5px solid ${selected?.place_id === r.place_id ? "#c0392b" : "#e8e4de"}`,
-                      background: selected?.place_id === r.place_id ? "#fdf5f4" : "#faf9f7",
-                      cursor: "pointer",
+                      width: 26,
+                      height: 26,
+                      borderRadius: "50%",
+                      background: stage === "pick" ? "#c0392b" : "#1a1a1a",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: 12,
+                      fontWeight: 700,
+                      fontFamily: "sans-serif",
+                      flexShrink: 0,
                     }}
                   >
+                    {stage !== "pick" ? "✓" : "2"}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: "sans-serif",
+                      fontWeight: 700,
+                      fontSize: 15,
+                      color: "#1a1a1a",
+                    }}
+                  >
+                    Pick a restaurant
+                  </span>
+                </div>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {searchResults.map((r) => (
                     <div
+                      key={r.place_id}
+                      onClick={() => pickRestaurant(r)}
                       style={{
-                        fontFamily: "sans-serif",
-                        fontWeight: 700,
-                        fontSize: 14,
-                        color: "#1a1a1a",
+                        padding: "12px 14px",
+                        borderRadius: 12,
+                        border: `1.5px solid ${
+                          selected?.place_id === r.place_id ? "#c0392b" : "#e8e4de"
+                        }`,
+                        background:
+                          selected?.place_id === r.place_id ? "#fdf5f4" : "#faf9f7",
+                        cursor: "pointer",
                       }}
                     >
-                      {r.name}
+                      <div
+                        style={{
+                          fontFamily: "sans-serif",
+                          fontWeight: 700,
+                          fontSize: 14,
+                          color: "#1a1a1a",
+                        }}
+                      >
+                        {r.name}
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+                        <StarRow rating={r.rating || 0} size={12} color="#d4a017" />
+                        <span style={{ fontFamily: "sans-serif", fontSize: 12, color: "#888" }}>
+                          {r.rating} · {r.user_ratings_total?.toLocaleString()} reviews
+                        </span>
+                      </div>
+                      <div
+                        style={{
+                          fontFamily: "sans-serif",
+                          fontSize: 12,
+                          color: "#aaa",
+                          marginTop: 2,
+                        }}
+                      >
+                        {r.formatted_address}
+                      </div>
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-                      <StarRow rating={r.rating || 0} size={12} color="#d4a017" />
-                      <span style={{ fontFamily: "sans-serif", fontSize: 12, color: "#888" }}>
-                        {r.rating} · {r.user_ratings_total?.toLocaleString()} reviews
-                      </span>
-                    </div>
-                    <div style={{ fontFamily: "sans-serif", fontSize: 12, color: "#aaa", marginTop: 2 }}>
-                      {r.formatted_address}
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Step 3 — Weights */}
         {(stage === "weights" || stage === "result") && selected && (
@@ -755,11 +785,18 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                   {total}% {total === 100 ? "✓" : ""}
                 </div>
               </div>
+
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
                 {CATEGORIES.map((cat) => (
-                  <WeightSlider key={cat.id} cat={cat} value={weights[cat.id]} onChange={handleWeight} />
+                  <WeightSlider
+                    key={cat.id}
+                    cat={cat}
+                    value={weights[cat.id]}
+                    onChange={handleWeight}
+                  />
                 ))}
               </div>
+
               {stage === "weights" && (
                 <button
                   onClick={analyze}
@@ -812,7 +849,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 </p>
                 <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
               </div>
-            ) : result && (
+            ) : result ? (
               <>
                 {/* Score Header */}
                 <div style={{ background: "#1a1a1a", padding: "24px 26px" }}>
@@ -827,9 +864,17 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                   >
                     {selected?.name}
                   </h2>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#666", marginBottom: 20 }}>
+                  <div
+                    style={{
+                      fontFamily: "sans-serif",
+                      fontSize: 11,
+                      color: "#666",
+                      marginBottom: 20,
+                    }}
+                  >
                     {selected?.formatted_address}
                   </div>
+
                   <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
                     <div style={{ flex: 1 }}>
                       <div
@@ -856,6 +901,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                       </div>
                       <StarRow rating={selected?.rating || 0} size={14} color="#666" />
                     </div>
+
                     <div style={{ padding: "0 16px", textAlign: "center" }}>
                       <div
                         style={{
@@ -878,6 +924,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                         {diff > 0 ? `+${diff}` : diff !== 0 ? diff : "same"}
                       </div>
                     </div>
+
                     <div style={{ flex: 1, textAlign: "right" }}>
                       <div
                         style={{
@@ -947,7 +994,8 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                     <div
                       style={{
                         fontFamily: "sans-serif",
-                        fontSize:                       color: "#444",
+                        fontSize: 13,
+                        color: "#444",
                         lineHeight: 1.6,
                       }}
                     >
@@ -956,7 +1004,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                   </div>
                 </div>
 
-                {/* Kept Reviews Summary */}
+                {/* Kept / Omitted summaries */}
                 <div style={{ padding: "0 24px 0" }}>
                   <div
                     style={{
@@ -978,7 +1026,14 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                     >
                       ✅ {result.reviewsCounted} review{result.reviewsCounted !== 1 ? "s" : ""} counted toward your score
                     </div>
-                    <div style={{ fontFamily: "sans-serif", fontSize: 13, color: "#333", lineHeight: 1.6 }}>
+                    <div
+                      style={{
+                        fontFamily: "sans-serif",
+                        fontSize: 13,
+                        color: "#333",
+                        lineHeight: 1.6,
+                      }}
+                    >
                       {result.keptSummary}
                     </div>
                   </div>
@@ -1003,7 +1058,14 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                     >
                       🚫 {result.reviewsExcluded} review{result.reviewsExcluded !== 1 ? "s" : ""} omitted from your score
                     </div>
-                    <div style={{ fontFamily: "sans-serif", fontSize: 13, color: "#333", lineHeight: 1.6 }}>
+                    <div
+                      style={{
+                        fontFamily: "sans-serif",
+                        fontSize: 13,
+                        color: "#333",
+                        lineHeight: 1.6,
+                      }}
+                    >
                       {result.omittedSummary}
                     </div>
                   </div>
@@ -1054,12 +1116,22 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                               {row.label}
                             </div>
                             <div style={{ fontFamily: "sans-serif", fontSize: 12, color: "#666" }}>
-                              {row.mentions != null ? `${row.mentions} review mention${row.mentions === 1 ? "" : "s"}` : ""}
+                              {row.mentions != null
+                                ? `${row.mentions} review mention${row.mentions === 1 ? "" : "s"}`
+                                : ""}
                             </div>
                           </div>
 
-                          <div style={{ fontFamily: "sans-serif", fontSize: 13, color: "#444", lineHeight: 1.6 }}>
-                            {row.score.toFixed(1)} × {row.weight}% = <strong>{row.contribution.toFixed(2)}</strong>
+                          <div
+                            style={{
+                              fontFamily: "sans-serif",
+                              fontSize: 13,
+                              color: "#444",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {row.score.toFixed(1)} × {row.weight}% ={" "}
+                            <strong>{row.contribution.toFixed(2)}</strong>
                           </div>
                         </div>
                       ))}
@@ -1072,10 +1144,23 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                           color: "#fff",
                         }}
                       >
-                        <div style={{ fontFamily: "sans-serif", fontSize: 12, opacity: 0.8, marginBottom: 4 }}>
+                        <div
+                          style={{
+                            fontFamily: "sans-serif",
+                            fontSize: 12,
+                            opacity: 0.8,
+                            marginBottom: 4,
+                          }}
+                        >
                           Final score
                         </div>
-                        <div style={{ fontFamily: "Georgia, serif", fontSize: 22, fontWeight: 700 }}>
+                        <div
+                          style={{
+                            fontFamily: "Georgia, serif",
+                            fontSize: 22,
+                            fontWeight: 700,
+                          }}
+                        >
                           {calcRows.reduce((sum, row) => sum + row.contribution, 0).toFixed(2)} →{" "}
                           {result.trueScore.toFixed(1)}
                         </div>
@@ -1122,7 +1207,8 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                           textAlign: "left",
                         }}
                       >
-                        {showKept ? "▲" : "▼"} Dig into the {keptReviews.length} review{keptReviews.length === 1 ? "" : "s"} that counted
+                        {showKept ? "▲" : "▼"} Dig into the {keptReviews.length} review
+                        {keptReviews.length === 1 ? "" : "s"} that counted
                       </button>
 
                       {showKept && (
@@ -1201,7 +1287,8 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                           textAlign: "left",
                         }}
                       >
-                        {showOmitted ? "▲" : "▼"} See the {omittedReviews.length} review{omittedReviews.length === 1 ? "" : "s"} that didn't make the cut
+                        {showOmitted ? "▲" : "▼"} See the {omittedReviews.length} review
+                        {omittedReviews.length === 1 ? "" : "s"} that didn't make the cut
                       </button>
 
                       {showOmitted && (
@@ -1306,7 +1393,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                   </button>
                 </div>
               </>
-            )}
+            ) : null}
           </div>
         )}
       </div>
