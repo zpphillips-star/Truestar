@@ -391,7 +391,9 @@ Here are the reviews to analyze:
 ${reviewsText}
 
 The user cares about these things (weights add to 100%):
-${weightDescegory definitions:
+${weightDesc}
+
+Category definitions:
 - food: taste, flavor, dishes, cooking, ingredients, freshness
 - price: cost, value, expensive, cheap, portions, worth it
 - service: staff, waiters, attentiveness, speed, hospitality
@@ -868,7 +870,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                       cat={cat}
                       value={weights[cat.id]}
                       onChange={handleWeight}
-                    />
+              />
                   ))}
                 </div>
 
