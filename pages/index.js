@@ -14,7 +14,7 @@ function StarRow({ rating, size = 16, color = "#d4a017" }) {
     <span style={{ display: "inline-flex", gap: 2 }}>
       {[1,2,3,4,5].map(s => {
         const pct = Math.min(1, Math.max(0, rating - (s-1)));
-        const id = `s${s}${size}${color.replace(/[#.]/g,"")}`;
+        const id = `grad${s}${size}${color.replace(/[^a-z0-9]/gi,"")}`;
         return (
           <svg key={s} width={size} height={size} viewBox="0 0 20 20">
             <defs>
@@ -34,12 +34,7 @@ function StarRow({ rating, size = 16, color = "#d4a017" }) {
 function WeightSlider({ cat, value, onChange }) {
   const active = value > 0;
   return (
-    <div style={{
-      padding: "14px 16px", borderRadius: 14,
-      border: `2px solid ${active ? cat.color + "55" : "#e8e4de"}`,
-      background: active ? cat.color + "07" : "#faf9f7",
-      transition: "all 0.2s",
-    }}>
+    <div style={{ padding: "14px 16px", borderRadius: 14, border: `2px solid ${active ? cat.color + "55" : "#e8e4de"}`, background: active ? cat.color + "07" : "#faf9f7", transition: "all 0.2s" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <span style={{ fontSize: 18 }}>{cat.emoji}</span>
@@ -48,16 +43,9 @@ function WeightSlider({ cat, value, onChange }) {
             <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#aaa" }}>{cat.desc}</div>
           </div>
         </div>
-        <div style={{
-          minWidth: 52, textAlign: "center", padding: "4px 10px",
-          background: active ? cat.color : "#eee", borderRadius: 99,
-          fontFamily: "sans-serif", fontWeight: 700, fontSize: 15,
-          color: active ? "#fff" : "#bbb", transition: "all 0.2s",
-        }}>{value}%</div>
+        <div style={{ minWidth: 52, textAlign: "center", padding: "4px 10px", background: active ? cat.color : "#eee", borderRadius: 99, fontFamily: "sans-serif", fontWeight: 700, fontSize: 15, color: active ? "#fff" : "#bbb", transition: "all 0.2s" }}>{value}%</div>
       </div>
-      <input type="range" min={0} max={100} step={5} value={value}
-        onChange={e => onChange(cat.id, parseInt(e.target.value))}
-        style={{ width: "100%", accentColor: cat.color, cursor: "pointer" }} />
+      <input type="range" min={0} max={100} step={5} value={value} onChange={e => onChange(cat.id, parseInt(e.target.value))} style={{ width: "100%", accentColor: cat.color, cursor: "pointer" }} />
       <div style={{ height: 4, borderRadius: 99, background: "#e0dbd5", marginTop: 4, overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${value}%`, background: active ? cat.color : "#ccc", borderRadius: 99, transition: "width 0.15s" }} />
       </div>
@@ -142,24 +130,17 @@ export default function Home() {
     try {
       const revRes = await fetch(`/api/reviews?placeId=${selected.place_id}`);
       const revData = await revRes.json();
-
-      if (!revRes.ok) {
-        throw new Error(revData.error || "Failed to fetch reviews");
-      }
+      if (!revRes.ok) throw new Error(revData.error || "Failed to fetch reviews");
 
       const reviews = revData.result?.reviews || [];
 
       if (reviews.length === 0) {
         setResult({
           trueScore: selected.rating || 3,
-          headline: "Not enough review text available for analysis.",
-          keptSummary: "No reviews were available to analyze.",
-          omittedSummary: "No reviews were omitted.",
-          categoryScores: {},
-          reviewTags: [],
-          reviewsCounted: 0,
-          reviewsExcluded: 0,
-          _reviews: [],
+          headline: "Not enough review data to analyze.",
+          keptSummary: "No reviews were available.",
+          omittedSummary: "Nothing to omit.",
+          categoryScores: {}, reviewTags: [], reviewsCounted: 0, reviewsExcluded: 0, _reviews: [],
         });
         setLoading(false);
         return;
@@ -169,42 +150,42 @@ export default function Home() {
       const weightDesc = activeWeights.map(c => `${c.label}: ${weights[c.id]}%`).join(", ");
       const reviewsText = reviews.map((r, i) => `Review ${i} (${r.rating} stars): "${r.text}"`).join("\n");
 
-      const prompt = `You are TrueStar, a restaurant rating analyzer.
+      const prompt = `You are TrueStar, a friendly restaurant rating analyzer. Speak casually and directly.
 
 Restaurant: ${selected.name}
-Official Rating: ${selected.rating} (${selected.user_ratings_total} total reviews)
+Official Google Rating: ${selected.rating} (${selected.user_ratings_total} total reviews)
 
-Reviews:
+Here are the reviews to analyze:
 ${reviewsText}
 
-User preference weights (total 100%):
+The user cares about these things (weights add to 100%):
 ${weightDesc}
 
-Categories:
+Category definitions:
 - food: taste, flavor, dishes, cooking, ingredients, freshness
 - price: cost, value, expensive, cheap, portions, worth it
-- service: staff, waiters, rudeness, attentiveness, speed
-- ambiance: decor, atmosphere, vibe, noise, cleanliness
+- service: staff, waiters, attentiveness, speed, hospitality
+- ambiance: decor, atmosphere, vibe, noise, cleanliness, views
 
-RULES:
-1. Tag each review with categories it mentions
-2. A review is COUNTED if it mentions at least one active category (weight > 0)
-3. A review is EXCLUDED if it ONLY mentions inactive categories (weight = 0)
-4. For each active category, average the star ratings from reviews mentioning that category
-5. TrueStar = sum of (categoryScore x weight/100) for active categories only
-6. categoryScores must be a number (not null) for active categories that have reviews
-7. trueScore must be a valid number between 1 and 5
+YOUR JOB:
+1. Read every review carefully
+2. Tag each review with which categories it mentions
+3. A review COUNTS if it mentions at least one category the user cares about (weight > 0)
+4. A review is OMITTED if it only talks about things the user doesn't care about (weight = 0)
+5. For each active category, calculate the average star rating from reviews that mention it
+6. TrueStar score = weighted average using only active categories
+7. All categoryScores for active categories MUST be real numbers (not null) if any reviews mention them
 
-Return ONLY valid JSON with no markdown and no code blocks:
+Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
 {
-  "reviewTags": [{"index": 0, "categories": ["food"], "counted": true}],
-  "categoryScores": {"food": 4.5, "price": 3.8, "service": null, "ambiance": null},
+  "reviewTags": [{"index": 0, "categories": ["food","service"], "counted": true}],
+  "categoryScores": {"food": 4.2, "price": 3.8, "service": null, "ambiance": null},
   "reviewsCounted": 4,
   "reviewsExcluded": 1,
-  "trueScore": 4.2,
-  "headline": "<one sharp sentence summarizing the TrueStar score>",
-  "keptSummary": "<one sentence explaining which reviews were counted and why>",
-  "omittedSummary": "<one sentence explaining which reviews were omitted and why>"
+  "trueScore": 4.1,
+  "headline": "One punchy sentence about what the TrueStar score means for this user",
+  "keptSummary": "Casual one sentence: how many reviews counted and what they mostly talked about",
+  "omittedSummary": "Casual one sentence: how many were skipped and why they didn't match what the user cares about"
 }`;
 
       const aiRes = await fetch("/api/analyze", {
@@ -214,32 +195,27 @@ Return ONLY valid JSON with no markdown and no code blocks:
       });
 
       const aiData = await aiRes.json();
-
-      if (!aiRes.ok) {
-        throw new Error(aiData.error || "AI analysis failed");
-      }
+      if (!aiRes.ok) throw new Error(aiData.error || "AI analysis failed");
 
       const text = aiData.content?.find(b => b.type === "text")?.text || "{}";
       const jsonStr = text.replace(/```json|```/g, "").trim();
       const parsed = JSON.parse(jsonStr);
 
-      // Fix NaN: recalculate trueScore ourselves to be safe
-      let calculatedScore = 0;
-      let totalWeight = 0;
+      // Recalculate trueScore ourselves to prevent NaN
+      let scoreSum = 0;
+      let weightSum = 0;
       activeWeights.forEach(c => {
-        const score = parsed.categoryScores?.[c.id];
-        if (score && !isNaN(score)) {
-          calculatedScore += score * (weights[c.id] / 100);
-          totalWeight += weights[c.id];
+        const s = parsed.categoryScores?.[c.id];
+        if (s != null && !isNaN(Number(s))) {
+          scoreSum += Number(s) * weights[c.id];
+          weightSum += weights[c.id];
         }
       });
-      if (totalWeight > 0) {
-        parsed.trueScore = Math.round((calculatedScore / totalWeight * 100) * 10) / 10;
-      } else {
-        parsed.trueScore = selected.rating;
-      }
-
+      parsed.trueScore = weightSum > 0 ? Math.round((scoreSum / weightSum) * 10) / 10 : selected.rating;
+      parsed.reviewsCounted = parsed.reviewTags?.filter(t => t.counted).length ?? 0;
+      parsed.reviewsExcluded = parsed.reviewTags?.filter(t => !t.counted).length ?? 0;
       parsed._reviews = reviews;
+
       setResult(parsed);
 
     } catch (e) {
@@ -285,11 +261,7 @@ Return ONLY valid JSON with no markdown and no code blocks:
         )}
 
         {/* Step 1 — Search */}
-        <div style={{
-          background: "#fff", borderRadius: 20, boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
-          border: `2px solid ${stage === "search" ? "#c0392b" : "#ece9e4"}`,
-          marginBottom: 14,
-        }}>
+        <div style={{ background: "#fff", borderRadius: 20, boxShadow: "0 2px 16px rgba(0,0,0,0.05)", border: `2px solid ${stage === "search" ? "#c0392b" : "#ece9e4"}`, marginBottom: 14 }}>
           <div style={{ padding: "18px 22px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
               <span style={{ width: 26, height: 26, borderRadius: "50%", background: stage === "search" ? "#c0392b" : "#1a1a1a", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, fontFamily: "sans-serif", flexShrink: 0 }}>
@@ -297,15 +269,9 @@ Return ONLY valid JSON with no markdown and no code blocks:
               </span>
               <span style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 15, color: "#1a1a1a" }}>Find a restaurant</span>
             </div>
-            <input value={query} onChange={e => setQuery(e.target.value)}
-              placeholder="Restaurant name (e.g. Nobu, Shake Shack)"
-              style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #e0dbd5", borderRadius: 10, fontSize: 14, fontFamily: "sans-serif", background: "#faf9f7", outline: "none", marginBottom: 10 }} />
-            <input value={location} onChange={e => setLocation(e.target.value)}
-              placeholder="City or neighborhood (e.g. Seattle, Brooklyn)"
-              onKeyDown={e => e.key === "Enter" && searchRestaurants()}
-              style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #e0dbd5", borderRadius: 10, fontSize: 14, fontFamily: "sans-serif", background: "#faf9f7", outline: "none", marginBottom: 12 }} />
-            <button onClick={searchRestaurants} disabled={searching || !query || !location}
-              style={{ width: "100%", padding: "13px", background: (!query || !location) ? "#ddd" : "#1a1a1a", color: "#fff", border: "none", borderRadius: 10, fontFamily: "sans-serif", fontSize: 14, fontWeight: 700, cursor: (!query || !location) ? "not-allowed" : "pointer" }}>
+            <input value={query} onChange={e => setQuery(e.target.value)} placeholder="Restaurant name (e.g. Nobu, Shake Shack)" style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #e0dbd5", borderRadius: 10, fontSize: 14, fontFamily: "sans-serif", background: "#faf9f7", outline: "none", marginBottom: 10 }} />
+            <input value={location} onChange={e => setLocation(e.target.value)} placeholder="City or neighborhood (e.g. Seattle, Brooklyn)" onKeyDown={e => e.key === "Enter" && searchRestaurants()} style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #e0dbd5", borderRadius: 10, fontSize: 14, fontFamily: "sans-serif", background: "#faf9f7", outline: "none", marginBottom: 12 }} />
+            <button onClick={searchRestaurants} disabled={searching || !query || !location} style={{ width: "100%", padding: "13px", background: (!query || !location) ? "#ddd" : "#1a1a1a", color: "#fff", border: "none", borderRadius: 10, fontFamily: "sans-serif", fontSize: 14, fontWeight: 700, cursor: (!query || !location) ? "not-allowed" : "pointer" }}>
               {searching ? "Searching..." : "Search Restaurants"}
             </button>
           </div>
@@ -323,8 +289,7 @@ Return ONLY valid JSON with no markdown and no code blocks:
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                 {searchResults.map(r => (
-                  <div key={r.place_id} onClick={() => pickRestaurant(r)}
-                    style={{ padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${selected?.place_id === r.place_id ? "#c0392b" : "#e8e4de"}`, background: selected?.place_id === r.place_id ? "#fdf5f4" : "#faf9f7", cursor: "pointer" }}>
+                  <div key={r.place_id} onClick={() => pickRestaurant(r)} style={{ padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${selected?.place_id === r.place_id ? "#c0392b" : "#e8e4de"}`, background: selected?.place_id === r.place_id ? "#fdf5f4" : "#faf9f7", cursor: "pointer" }}>
                     <div style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 14, color: "#1a1a1a" }}>{r.name}</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
                       <StarRow rating={r.rating || 0} size={12} color="#d4a017" />
@@ -355,8 +320,7 @@ Return ONLY valid JSON with no markdown and no code blocks:
                 {CATEGORIES.map(cat => <WeightSlider key={cat.id} cat={cat} value={weights[cat.id]} onChange={handleWeight} />)}
               </div>
               {stage === "weights" && (
-                <button onClick={analyze} disabled={total !== 100}
-                  style={{ width: "100%", padding: "14px", background: total !== 100 ? "#ddd" : "#1a1a1a", color: "#fff", border: "none", borderRadius: 12, fontFamily: "sans-serif", fontSize: 15, fontWeight: 700, cursor: total !== 100 ? "not-allowed" : "pointer" }}>
+                <button onClick={analyze} disabled={total !== 100} style={{ width: "100%", padding: "14px", background: total !== 100 ? "#ddd" : "#1a1a1a", color: "#fff", border: "none", borderRadius: 12, fontFamily: "sans-serif", fontSize: 15, fontWeight: 700, cursor: total !== 100 ? "not-allowed" : "pointer" }}>
                   {total !== 100 ? `Adjust to 100% (${total}% now)` : "Get My TrueStar Rating →"}
                 </button>
               )}
@@ -370,7 +334,7 @@ Return ONLY valid JSON with no markdown and no code blocks:
             {loading ? (
               <div style={{ padding: "52px 24px", textAlign: "center" }}>
                 <div style={{ fontSize: 36, marginBottom: 14, display: "inline-block", animation: "spin 1.2s linear infinite" }}>⭐</div>
-                <p style={{ fontFamily: "sans-serif", color: "#888", fontSize: 15, margin: 0 }}>Analyzing reviews with your preferences…</p>
+                <p style={{ fontFamily: "sans-serif", color: "#888", fontSize: 15, margin: 0 }}>Reading reviews with your priorities in mind…</p>
                 <style>{`@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}`}</style>
               </div>
             ) : result && (
@@ -378,88 +342,64 @@ Return ONLY valid JSON with no markdown and no code blocks:
                 {/* Score Header */}
                 <div style={{ background: "#1a1a1a", padding: "24px 26px" }}>
                   <h2 style={{ margin: "0 0 4px", fontFamily: "Georgia, serif", fontSize: 22, color: "#fff", fontWeight: 700 }}>{selected?.name}</h2>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#555", marginBottom: 18 }}>{selected?.formatted_address}</div>
-
-                  <div style={{ display: "flex", gap: 20, alignItems: "center" }}>
-                    {/* Official */}
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#555", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Google</div>
-                      <div style={{ fontFamily: "Georgia, serif", fontSize: 28, color: "#777", fontWeight: 700 }}>{selected?.rating?.toFixed(1)}</div>
-                      <StarRow rating={selected?.rating || 0} size={13} color="#555" />
+                  <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#666", marginBottom: 20 }}>{selected?.formatted_address}</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#666", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>Google Rating</div>
+                      <div style={{ fontFamily: "Georgia, serif", fontSize: 32, color: "#888", fontWeight: 700 }}>{selected?.rating?.toFixed(1)}</div>
+                      <StarRow rating={selected?.rating || 0} size={14} color="#666" />
                     </div>
-
-                    {/* Arrow */}
-                    <div style={{ flex: 1, textAlign: "center" }}>
-                      <div style={{ fontFamily: "sans-serif", fontSize: 22, color: diff > 0 ? "#4caf76" : diff < 0 ? "#e87070" : "#555" }}>
-                        {diff > 0 ? "▲" : diff < 0 ? "▼" : "="} <span style={{ fontSize: 15, fontWeight: 700 }}>{diff > 0 ? "+" : ""}{diff !== 0 ? diff : "no change"}</span>
+                    <div style={{ padding: "0 16px", textAlign: "center" }}>
+                      <div style={{ fontSize: 20, color: diff > 0 ? "#4caf76" : diff < 0 ? "#e87070" : "#555", fontWeight: 700 }}>
+                        {diff > 0 ? "▲" : diff < 0 ? "▼" : "▶"}
+                      </div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, color: diff > 0 ? "#4caf76" : diff < 0 ? "#e87070" : "#888", marginTop: 2 }}>
+                        {diff > 0 ? `+${diff}` : diff !== 0 ? diff : "same"}
                       </div>
                     </div>
-
-                    {/* TrueStar */}
-                    <div style={{ textAlign: "center" }}>
-                      <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#c0392b", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>TrueStar</div>
-                      <div style={{ fontFamily: "Georgia, serif", fontSize: 28, color: "#fff", fontWeight: 700 }}>{result.trueScore?.toFixed(1)}</div>
-                      <StarRow rating={result.trueScore || 0} size={13} color="#d4a017" />
+                    <div style={{ flex: 1, textAlign: "right" }}>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#c0392b", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>TrueStar</div>
+                      <div style={{ fontFamily: "Georgia, serif", fontSize: 32, color: "#fff", fontWeight: 700 }}>{result.trueScore?.toFixed(1)}</div>
+                      <StarRow rating={result.trueScore || 0} size={14} color="#d4a017" />
                     </div>
                   </div>
                 </div>
 
                 {/* Headline */}
-                <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid #ece9e4" }}>
-                  <p style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 15, color: "#1a1a1a", fontStyle: "italic", lineHeight: 1.65 }}>"{result.headline}"</p>
+                <div style={{ padding: "18px 24px 14px", borderBottom: "1px solid #ece9e4" }}>
+                  <p style={{ margin: 0, fontFamily: "Georgia, serif", fontSize: 15, color: "#1a1a1a", fontStyle: "italic", lineHeight: 1.7 }}>"{result.headline}"</p>
                 </div>
 
-                {/* Category Scores */}
-                <div style={{ padding: "16px 24px", borderBottom: "1px solid #ece9e4" }}>
-                  {CATEGORIES.filter(c => weights[c.id] > 0).map(c => {
-                    const score = result.categoryScores?.[c.id];
-                    const hasScore = score && !isNaN(score);
-                    return (
-                      <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          <span>{c.emoji}</span>
-                          <span style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 600, color: c.color }}>{c.label}</span>
-                          <span style={{ fontSize: 11, padding: "1px 7px", borderRadius: 99, background: c.color + "18", color: c.color, fontFamily: "sans-serif", fontWeight: 700 }}>{weights[c.id]}%</span>
-                        </div>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                          {hasScore && <StarRow rating={score} size={12} color={c.color} />}
-                          <span style={{ fontFamily: "Georgia, serif", fontSize: 16, fontWeight: 700, color: hasScore ? c.color : "#bbb" }}>
-                            {hasScore ? score.toFixed(1) : "—"}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-
-                {/* Reviews Summary */}
-                <div style={{ padding: "16px 24px", borderBottom: "1px solid #ece9e4", background: "#faf9f7" }}>
-                  <div style={{ display: "flex", gap: 12, marginBottom: 12 }}>
-                    <div style={{ flex: 1, padding: "10px 14px", borderRadius: 10, background: "#e8f5ee", border: "1px solid #c3e6d0" }}>
-                      <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: "#1a6e3c", marginBottom: 2 }}>✅ {keptReviews.length} REVIEWS COUNTED</div>
-                      <div style={{ fontFamily: "sans-serif", fontSize: 12, color: "#444", lineHeight: 1.5 }}>{result.keptSummary}</div>
+                {/* Kept Reviews Summary */}
+                <div style={{ padding: "14px 24px 0" }}>
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: "#f0faf4", border: "1.5px solid #c3e6d0", marginBottom: 10 }}>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, color: "#1a6e3c", marginBottom: 4 }}>
+                      ✅ {result.reviewsCounted} review{result.reviewsCounted !== 1 ? "s" : ""} counted toward your score
                     </div>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 13, color: "#333", lineHeight: 1.6 }}>{result.keptSummary}</div>
                   </div>
-                  <div style={{ flex: 1, padding: "10px 14px", borderRadius: 10, background: "#fdf0f0", border: "1px solid #f0d0d0" }}>
-                    <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: "#c0392b", marginBottom: 2 }}>🚫 {omittedReviews.length} REVIEWS OMITTED</div>
-                    <div style={{ fontFamily: "sans-serif", fontSize: 12, color: "#444", lineHeight: 1.5 }}>{result.omittedSummary}</div>
+
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: "#fdf0f0", border: "1.5px solid #f0d0d0", marginBottom: 14 }}>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 12, fontWeight: 700, color: "#c0392b", marginBottom: 4 }}>
+                      🚫 {result.reviewsExcluded} review{result.reviewsExcluded !== 1 ? "s" : ""} omitted from your score
+                    </div>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 13, color: "#333", lineHeight: 1.6 }}>{result.omittedSummary}</div>
                   </div>
                 </div>
 
-                {/* Expandable Reviews */}
-                <div style={{ padding: "16px 24px" }}>
+                {/* Expandable: Kept Reviews */}
+                <div style={{ padding: "0 24px 10px" }}>
                   {keptReviews.length > 0 && (
-                    <div style={{ marginBottom: 10 }}>
-                      <button onClick={() => setShowKept(!showKept)}
-                        style={{ width: "100%", padding: "10px", background: "#e8f5ee", border: "1px solid #c3e6d0", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: "#1a6e3c", cursor: "pointer", fontWeight: 600 }}>
-                        {showKept ? "▲ Hide" : "▼ See"} {keptReviews.length} reviews that counted
+                    <div style={{ marginBottom: 8 }}>
+                      <button onClick={() => setShowKept(!showKept)} style={{ width: "100%", padding: "10px 14px", background: "#f0faf4", border: "1.5px solid #c3e6d0", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: "#1a6e3c", cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
+                        {showKept ? "▲" : "▼"} Dig into the {keptReviews.length} reviews that counted
                       </button>
                       {showKept && (
                         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
                           {keptReviews.map((rev, i) => (
                             <div key={i} style={{ padding: "12px 14px", borderRadius: 10, background: "#fff", border: "1px solid #e0dbd4" }}>
-                              <StarRow rating={rev.rating} size={12} color="#d4a017" />
-                              <p style={{ margin: "6px 0 0", fontFamily: "sans-serif", fontSize: 13, color: "#444", lineHeight: 1.6 }}>{rev.text}</p>
+                              <StarRow rating={rev.rating} size={13} color="#d4a017" />
+                              <p style={{ margin: "8px 0 0", fontFamily: "sans-serif", fontSize: 13, color: "#444", lineHeight: 1.6 }}>{rev.text}</p>
                             </div>
                           ))}
                         </div>
@@ -467,18 +407,18 @@ Return ONLY valid JSON with no markdown and no code blocks:
                     </div>
                   )}
 
+                  {/* Expandable: Omitted Reviews */}
                   {omittedReviews.length > 0 && (
-                    <div style={{ marginBottom: 10 }}>
-                      <button onClick={() => setShowOmitted(!showOmitted)}
-                        style={{ width: "100%", padding: "10px", background: "#fdf0f0", border: "1px solid #f0d0d0", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: "#c0392b", cursor: "pointer", fontWeight: 600 }}>
-                        {showOmitted ? "▲ Hide" : "▼ See"} {omittedReviews.length} reviews that were omitted
+                    <div style={{ marginBottom: 8 }}>
+                      <button onClick={() => setShowOmitted(!showOmitted)} style={{ width: "100%", padding: "10px 14px", background: "#fdf0f0", border: "1.5px solid #f0d0d0", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: "#c0392b", cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
+                        {showOmitted ? "▲" : "▼"} See the {omittedReviews.length} reviews that didn't make the cut
                       </button>
                       {showOmitted && (
                         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
                           {omittedReviews.map((rev, i) => (
-                            <div key={i} style={{ padding: "12px 14px", borderRadius: 10, background: "#fdf5f5", border: "1px solid #f0d0d0", opacity: 0.8 }}>
-                              <StarRow rating={rev.rating} size={12} color="#ccc" />
-                              <p style={{ margin: "6px 0 0", fontFamily: "sans-serif", fontSize: 13, color: "#888", lineHeight: 1.6 }}>{rev.text}</p>
+                            <div key={i} style={{ padding: "12px 14px", borderRadius: 10, background: "#fdf5f5", border: "1px solid #f0d0d0" }}>
+                              <StarRow rating={rev.rating} size={13} color="#ccc" />
+                              <p style={{ margin: "8px 0 0", fontFamily: "sans-serif", fontSize: 13, color: "#999", lineHeight: 1.6 }}>{rev.text}</p>
                             </div>
                           ))}
                         </div>
@@ -488,11 +428,9 @@ Return ONLY valid JSON with no markdown and no code blocks:
                 </div>
 
                 {/* Actions */}
-                <div style={{ padding: "0 24px 24px", display: "flex", gap: 10 }}>
-                  <button onClick={() => { setStage("weights"); setResult(null); }}
-                    style={{ flex: 1, padding: "10px", background: "#fff", border: "1.5px solid #e0dbd4", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: "#666", cursor: "pointer", fontWeight: 600 }}>← Adjust weights</button>
-                  <button onClick={reset}
-                    style={{ flex: 1, padding: "10px", background: "#1a1a1a", border: "none", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: "#fff", cursor: "pointer", fontWeight: 600 }}>New search →</button>
+                <div style={{ padding: "8px 24px 24px", display: "flex", gap: 10 }}>
+                  <button onClick={() => { setStage("weights"); setResult(null); }} style={{ flex: 1, padding: "10px", background: "#fff", border: "1.5px solid #e0dbd4", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: "#666", cursor: "pointer", fontWeight: 600 }}>← Adjust weights</button>
+                  <button onClick={reset} style={{ flex: 1, padding: "10px", background: "#1a1a1a", border: "none", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: "#fff", cursor: "pointer", fontWeight: 600 }}>New search →</button>
                 </div>
               </>
             )}
