@@ -132,23 +132,14 @@ function WeightSlider({ cat, value, onChange }) {
 }
 
 function StepHeader({
-  stage,
-  currentStage,
   stepNumber,
   label,
   expanded,
   onToggle,
   summary,
+  active,
+  completed,
 }) {
-  const isCurrent = stage === currentStage;
-  const isComplete = !isCurrent && ["search", "pick", "weights"].includes(currentStage) === false
-    ? false
-    : currentStage !== stage && (
-        (stage === "search" && ["pick", "weights", "result"].includes(currentStage)) ||
-        (stage === "pick" && ["weights", "result"].includes(currentStage)) ||
-        (stage === "weights" && ["result"].includes(currentStage))
-      );
-
   return (
     <button
       type="button"
@@ -170,7 +161,7 @@ function StepHeader({
           width: 26,
           height: 26,
           borderRadius: "50%",
-          background: isCurrent ? "#c0392b" : "#1a1a1a",
+          background: active ? "#c0392b" : "#1a1a1a",
           color: "#fff",
           display: "flex",
           alignItems: "center",
@@ -181,7 +172,7 @@ function StepHeader({
           flexShrink: 0,
         }}
       >
-        {isComplete ? "✓" : stepNumber}
+        {completed ? "✓" : stepNumber}
       </span>
 
       <div style={{ minWidth: 0, flex: 1 }}>
@@ -195,6 +186,7 @@ function StepHeader({
         >
           {label}
         </div>
+
         {!!summary && (
           <div
             style={{
@@ -249,8 +241,7 @@ export default function Home() {
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
 
   const activeWeightSummary = useMemo(() => {
-    return CATEGORIES
-      .filter((c) => weights[c.id] > 0)
+    return CATEGORIES.filter((c) => weights[c.id] > 0)
       .map((c) => `${c.label} ${weights[c.id]}%`)
       .join(" • ");
   }, [weights]);
@@ -351,7 +342,7 @@ export default function Home() {
     setShowOmitted(false);
     setShowCalc(false);
 
-    // collapse the setup sections once analysis starts
+    // collapse setup cards once analysis starts
     setSearchExpanded(false);
     setPickExpanded(false);
     setWeightsExpanded(false);
@@ -400,9 +391,7 @@ Here are the reviews to analyze:
 ${reviewsText}
 
 The user cares about these things (weights add to 100%):
-${Desc}
-
-Category definitions:
+${weightDescegory definitions:
 - food: taste, flavor, dishes, cooking, ingredients, freshness
 - price: cost, value, expensive, cheap, portions, worth it
 - service: staff, waiters, attentiveness, speed, hospitality
@@ -499,9 +488,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
       });
 
       const computedTrueScore =
-        weightSum > 0
-          ? Math.round((scoreSum / weightSum) * 10) / 10
-          : selected.rating;
+        weightSum > 0 ? Math.round((scoreSum / weightSum) * 10) / 10 : selected.rating;
 
       setResult({
         reviewTags: safeReviewTags,
@@ -604,6 +591,10 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
       )
     : [];
 
+  const searchCompleted = ["pick", "weights", "result"].includes(stage);
+  const pickCompleted = ["weights", "result"].includes(stage);
+  const weightsCompleted = ["result"].includes(stage);
+
   return (
     <div
       style={{
@@ -686,13 +677,13 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
           }}
         >
           <StepHeader
-            stage="search"
-            currentStage={stage}
             stepNumber="1"
             label="Find a restaurant"
             expanded={searchExpanded || stage === "search"}
             onToggle={() => setSearchExpanded((v) => !v)}
             summary={query && location ? `${query} • ${location}` : ""}
+            active={stage === "search"}
+            completed={searchCompleted}
           />
 
           {(searchExpanded || stage === "search") && (
@@ -768,13 +759,13 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
               }}
             >
               <StepHeader
-                stage="pick"
-                currentStage={stage}
                 stepNumber="2"
                 label="Pick a restaurant"
                 expanded={pickExpanded || stage === "pick"}
                 onToggle={() => setPickExpanded((v) => !v)}
                 summary={selected?.name || ""}
+                active={stage === "pick"}
+                completed={pickCompleted}
               />
 
               {(pickExpanded || stage === "pick") && (
@@ -841,13 +832,13 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
             }}
           >
             <StepHeader
-              stage="weights"
-              currentStage={stage}
               stepNumber="3"
               label="Set your priorities"
               expanded={weightsExpanded || stage === "weights"}
               onToggle={() => setWeightsExpanded((v) => !v)}
               summary={activeWeightSummary}
+              active={stage === "weights"}
+              completed={weightsCompleted}
             />
 
             {(weightsExpanded || stage === "weights") && (
