@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 
 const CATEGORIES = [
   { id: "food", label: "Food Quality", emoji: "🍽️", color: "#c0392b", desc: "Taste, cooking, ingredients" },
@@ -240,24 +240,9 @@ export default function Home() {
 
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
 
-  const activeWeightSummary = useMemo(() => {
-    return CATEGORIES.filter((c) => weights[c.id] > 0)
-      .map((c) => `${c.label} ${weights[c.id]}%`)
-      .join(" • ");
-  }, [weights]);
-
-  const googleMapsUrl = useMemo(() => {
-    if (!selected) return null;
-
-    const queryText = `${selected.name || ""} ${selected.formatted_address || ""}`.trim();
-    const base = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryText)}`;
-
-    if (selected.place_id) {
-      return `${base}&query_place_id=${encodeURIComponent(selected.place_id)}`;
-    }
-
-    return base;
-  }, [selected]);
+  const activeWeightSummary = CATEGORIES.filter((c) => weights[c.id] > 0)
+    .map((c) => `${c.label} ${weights[c.id]}%`)
+    .join(" • ");
 
   const handleWeight = useCallback((id, newVal) => {
     setWeights((prev) => {
@@ -607,7 +592,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
         alignItems: "center",
       }}
     >
-      <style>{`* { box-sizing: border-box; } input[type=range] { height: 4px; } a { text-decoration: none; }`}</style>
+      <style>{`* { box-sizing: border-box; } input[type=range] { height: 4px; }`}</style>
 
       <div style={{ paddingTop: 48, paddingBottom: 6, textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
@@ -774,8 +759,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 <div style={{ padding: "0 22px 18px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {searchResults.map((r) => (
-                      <div
-                        key={r.place_id}
+                                             key={r.place_id}
                         onClick={() => pickRestaurant(r)}
                         style={{
                           padding: "12px 14px",
@@ -870,7 +854,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                       cat={cat}
                       value={weights[cat.id]}
                       onChange={handleWeight}
-              />
+                    />
                   ))}
                 </div>
 
@@ -931,57 +915,27 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
               <>
                 {/* Score Header */}
                 <div style={{ background: "#1a1a1a", padding: "24px 26px" }}>
-                  {googleMapsUrl ? (
-                    {googleMapsUrl}
-                      <h2
-                        style={{
-                          margin: "0 0 4px",
-                          fontFamily: "Georgia, serif",
-                          fontSize: 22,
-                          color: "#fff",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {selected?.name}
-                      </h2>
-                      <div
-                        style={{
-                          fontFamily: "sans-serif",
-                          fontSize: 11,
-                          color: "#9c9994",
-                          marginBottom: 20,
-                          textDecoration: "underline",
-                          textUnderlineOffset: "2px",
-                        }}
-                      >
-                        {selected?.formatted_address}
-                      </div>
-                    </a>
-                  ) : (
-                    <>
-                      <h2
-                        style={{
-                          margin: "0 0 4px",
-                          fontFamily: "Georgia, serif",
-                          fontSize: 22,
-                          color: "#fff",
-                          fontWeight: 700,
-                        }}
-                      >
-                        {selected?.name}
-                      </h2>
-                      <div
-                        style={{
-                          fontFamily: "sans-serif",
-                          fontSize: 11,
-                          color: "#666",
-                          marginBottom: 20,
-                        }}
-                      >
-                        {selected?.formatted_address}
-                      </div>
-                    </>
-                  )}
+                  <h2
+                    style={{
+                      margin: "0 0 4px",
+                      fontFamily: "Georgia, serif",
+                      fontSize: 22,
+                      color: "#fff",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {selected?.name}
+                  </h2>
+                  <div
+                    style={{
+                      fontFamily: "sans-serif",
+                      fontSize: 11,
+                      color: "#666",
+                      marginBottom: 20,
+                    }}
+                  >
+                    {selected?.formatted_address}
+                  </div>
 
                   <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
                     <div style={{ flex: 1 }}>
