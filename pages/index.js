@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 
 const CATEGORIES = [
   { id: "food", label: "Food Quality", emoji: "🍽️", color: "#c0392b", desc: "Taste, cooking, ingredients" },
@@ -36,6 +36,7 @@ function StarRow({ rating, size = 16, color = "#d4a017" }) {
 
 function WeightSlider({ cat, value, onChange }) {
   const active = value > 0;
+
   return (
     <div
       style={{
@@ -78,6 +79,7 @@ function WeightSlider({ cat, value, onChange }) {
             </div>
           </div>
         </div>
+
         <div
           style={{
             minWidth: 52,
@@ -95,15 +97,17 @@ function WeightSlider({ cat, value, onChange }) {
           {value}%
         </div>
       </div>
+
       <input
         type="range"
         min={0}
         max={100}
         step={5}
         value={value}
-        onChange={(e) => onChange(cat.id, parseInt(e.target.value))}
+        onChange={(e) => onChange(cat.id, parseInt(e.target.value, 10))}
         style={{ width: "100%", accentColor: cat.color, cursor: "pointer" }}
       />
+
       <div
         style={{
           height: 4,
@@ -127,6 +131,102 @@ function WeightSlider({ cat, value, onChange }) {
   );
 }
 
+function StepHeader({
+  stage,
+  currentStage,
+  stepNumber,
+  label,
+  expanded,
+  onToggle,
+  summary,
+}) {
+  const isCurrent = stage === currentStage;
+  const isComplete = !isCurrent && ["search", "pick", "weights"].includes(currentStage) === false
+    ? false
+    : currentStage !== stage && (
+        (stage === "search" && ["pick", "weights", "result"].includes(currentStage)) ||
+        (stage === "pick" && ["weights", "result"].includes(currentStage)) ||
+        (stage === "weights" && ["result"].includes(currentStage))
+      );
+
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      style={{
+        width: "100%",
+        background: "transparent",
+        border: "none",
+        padding: "18px 22px",
+        display: "flex",
+        alignItems: "center",
+        gap: 10,
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      <span
+        style={{
+          width: 26,
+          height: 26,
+          borderRadius: "50%",
+          background: isCurrent ? "#c0392b" : "#1a1a1a",
+          color: "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 12,
+          fontWeight: 700,
+          fontFamily: "sans-serif",
+          flexShrink: 0,
+        }}
+      >
+        {isComplete ? "✓" : stepNumber}
+      </span>
+
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div
+          style={{
+            fontFamily: "sans-serif",
+            fontWeight: 700,
+            fontSize: 15,
+            color: "#1a1a1a",
+          }}
+        >
+          {label}
+        </div>
+        {!!summary && (
+          <div
+            style={{
+              marginTop: 2,
+              fontFamily: "sans-serif",
+              fontSize: 12,
+              color: "#8b8782",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+            }}
+          >
+            {summary}
+          </div>
+        )}
+      </div>
+
+      <span
+        style={{
+          fontFamily: "sans-serif",
+          fontSize: 14,
+          color: "#8b8782",
+          fontWeight: 700,
+          flexShrink: 0,
+        }}
+      >
+        {expanded ? "▲" : "▼"}
+      </span>
+    </button>
+  );
+}
+
 export default function Home() {
   const [query, setQuery] = useState("");
   const [location, setLocation] = useState("");
@@ -142,7 +242,31 @@ export default function Home() {
   const [showCalc, setShowCalc] = useState(false);
   const [error, setError] = useState(null);
 
+  const [searchExpanded, setSearchExpanded] = useState(true);
+  const [pickExpanded, setPickExpanded] = useState(true);
+  const [weightsExpanded, setWeightsExpanded] = useState(true);
+
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
+
+  const activeWeightSummary = useMemo(() => {
+    return CATEGORIES
+      .filter((c) => weights[c.id] > 0)
+      .map((c) => `${c.label} ${weights[c.id]}%`)
+      .join(" • ");
+  }, [weights]);
+
+  const googleMapsUrl = useMemo(() => {
+    if (!selected) return null;
+
+    const queryText = `${selected.name || ""} ${selected.formatted_address || ""}`.trim();
+    const base = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(queryText)}`;
+
+    if (selected.place_id) {
+      return `${base}&query_place_id=${encodeURIComponent(selected.place_id)}`;
+    }
+
+    return base;
+  }, [selected]);
 
   const handleWeight = useCallback((id, newVal) => {
     setWeights((prev) => {
@@ -193,6 +317,9 @@ export default function Home() {
       if (data.results && data.results.length > 0) {
         setSearchResults(data.results.slice(0, 6));
         setStage("pick");
+        setSearchExpanded(true);
+        setPickExpanded(true);
+        setWeightsExpanded(true);
       } else {
         setError("No results found. Try a different search.");
       }
@@ -210,6 +337,8 @@ export default function Home() {
     setShowKept(false);
     setShowOmitted(false);
     setShowCalc(false);
+    setPickExpanded(true);
+    setWeightsExpanded(true);
   };
 
   const analyze = async () => {
@@ -221,6 +350,11 @@ export default function Home() {
     setShowKept(false);
     setShowOmitted(false);
     setShowCalc(false);
+
+    // collapse the setup sections once analysis starts
+    setSearchExpanded(false);
+    setPickExpanded(false);
+    setWeightsExpanded(false);
 
     try {
       const revRes = await fetch(`/api/reviews?placeId=${selected.place_id}`);
@@ -252,10 +386,7 @@ export default function Home() {
       }
 
       const activeWeights = CATEGORIES.filter((c) => weights[c.id] > 0);
-      const weightDesc = activeWeights
-        .map((c) => `${c.label}: ${weights[c.id]}%`)
-        .join(", ");
-
+      const weightDesc = activeWeights.map((c) => `${c.label}: ${weights[c.id]}%`).join(", ");
       const reviewsText = reviews
         .map((r, i) => `Review ${i} (${r.rating} stars): "${r.text}"`)
         .join("\n");
@@ -269,7 +400,7 @@ Here are the reviews to analyze:
 ${reviewsText}
 
 The user cares about these things (weights add to 100%):
-${weightDesc}
+${Desc}
 
 Category definitions:
 - food: taste, flavor, dishes, cooking, ingredients, freshness
@@ -286,7 +417,7 @@ YOUR JOB:
 6. TrueStar score = weighted average using only active categories
 7. If TrueStar is lower than the official Google rating, explain exactly why for this user's preferences
 8. If TrueStar is higher than the official Google rating, explain what boosted it for this user
-9. keptSummary must mention specific themes from the counted reviews (examples: overcooked fish, salty dishes, expensive tasting menu, huge portions, great burgers)
+9. keptSummary must mention specific themes from the counted reviews
 10. omittedSummary must mention what the omitted reviews focused on instead and why that did not affect this user's score
 11. reviewTags.reason should briefly explain why each review counted or was omitted
 12. categoryMentions should count how many reviews mentioned each category
@@ -372,7 +503,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
           ? Math.round((scoreSum / weightSum) * 10) / 10
           : selected.rating;
 
-      const normalized = {
+      setResult({
         reviewTags: safeReviewTags,
         categoryScores: safeCategoryScores,
         categoryMentions: safeCategoryMentions,
@@ -392,13 +523,14 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
           parsed.omittedSummary ||
           "The omitted reviews focused on categories you didn't weight, so they didn't affect your result.",
         _reviews: reviews,
-      };
-
-      setResult(normalized);
+      });
     } catch (e) {
       console.error("Analyze error:", e);
       setError(`Analysis failed: ${e.message}`);
       setStage("weights");
+      setSearchExpanded(true);
+      setPickExpanded(true);
+      setWeightsExpanded(true);
     }
 
     setLoading(false);
@@ -416,6 +548,9 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
     setShowOmitted(false);
     setShowCalc(false);
     setError(null);
+    setSearchExpanded(true);
+    setPickExpanded(true);
+    setWeightsExpanded(true);
   };
 
   const diff =
@@ -430,6 +565,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
           counted: true,
           reason: "",
         };
+
       return { review, index, tag };
     }) || [];
 
@@ -446,6 +582,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
         const score = Number(result.categoryScores[c.id]);
         const weight = weights[c.id];
         const contribution = (score * weight) / 100;
+
         return {
           id: c.id,
           label: c.label,
@@ -477,7 +614,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
         alignItems: "center",
       }}
     >
-      <style>{`* { box-sizing: border-box; } input[type=range] { height: 4px; }`}</style>
+      <style>{`* { box-sizing: border-box; } input[type=range] { height: 4px; } a { text-decoration: none; }`}</style>
 
       <div style={{ paddingTop: 48, paddingBottom: 6, textAlign: "center" }}>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
@@ -545,98 +682,80 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
             boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
             border: `2px solid ${stage === "search" ? "#c0392b" : "#ece9e4"}`,
             marginBottom: 14,
+            overflow: "hidden",
           }}
         >
-          <div style={{ padding: "18px 22px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-              <span
+          <StepHeader
+            stage="search"
+            currentStage={stage}
+            stepNumber="1"
+            label="Find a restaurant"
+            expanded={searchExpanded || stage === "search"}
+            onToggle={() => setSearchExpanded((v) => !v)}
+            summary={query && location ? `${query} • ${location}` : ""}
+          />
+
+          {(searchExpanded || stage === "search") && (
+            <div style={{ padding: "0 22px 18px" }}>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Restaurant name (e.g. Nobu, Shake Shack)"
                 style={{
-                  width: 26,
-                  height: 26,
-                  borderRadius: "50%",
-                  background: stage === "search" ? "#c0392b" : "#1a1a1a",
+                  width: "100%",
+                  padding: "12px 14px",
+                  border: "1.5px solid #e0dbd5",
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontFamily: "sans-serif",
+                  background: "#faf9f7",
+                  outline: "none",
+                  marginBottom: 10,
+                }}
+              />
+
+              <input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="City or neighborhood (e.g. Seattle, Brooklyn)"
+                onKeyDown={(e) => e.key === "Enter" && searchRestaurants()}
+                style={{
+                  width: "100%",
+                  padding: "12px 14px",
+                  border: "1.5px solid #e0dbd5",
+                  borderRadius: 10,
+                  fontSize: 14,
+                  fontFamily: "sans-serif",
+                  background: "#faf9f7",
+                  outline: "none",
+                  marginBottom: 12,
+                }}
+              />
+
+              <button
+                onClick={searchRestaurants}
+                disabled={searching || !query || !location}
+                style={{
+                  width: "100%",
+                  padding: "13px",
+                  background: !query || !location ? "#ddd" : "#1a1a1a",
                   color: "#fff",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 12,
-                  fontWeight: 700,
+                  border: "none",
+                  borderRadius: 10,
                   fontFamily: "sans-serif",
-                  flexShrink: 0,
+                  fontSize: 14,
+                  fontWeight: 700,
+                  cursor: !query || !location ? "not-allowed" : "pointer",
                 }}
               >
-                {stage !== "search" ? "✓" : "1"}
-              </span>
-              <span
-                style={{
-                  fontFamily: "sans-serif",
-                  fontWeight: 700,
-                  fontSize: 15,
-                  color: "#1a1a1a",
-                }}
-              >
-                Find a restaurant
-              </span>
+                {searching ? "Searching..." : "Search Restaurants"}
+              </button>
             </div>
-
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Restaurant name (e.g. Nobu, Shake Shack)"
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                border: "1.5px solid #e0dbd5",
-                borderRadius: 10,
-                fontSize: 14,
-                fontFamily: "sans-serif",
-                background: "#faf9f7",
-                outline: "none",
-                marginBottom: 10,
-              }}
-            />
-
-            <input
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="City or neighborhood (e.g. Seattle, Brooklyn)"
-              onKeyDown={(e) => e.key === "Enter" && searchRestaurants()}
-              style={{
-                width: "100%",
-                padding: "12px 14px",
-                border: "1.5px solid #e0dbd5",
-                borderRadius: 10,
-                fontSize: 14,
-                fontFamily: "sans-serif",
-                background: "#faf9f7",
-                outline: "none",
-                marginBottom: 12,
-              }}
-            />
-
-            <button
-              onClick={searchRestaurants}
-              disabled={searching || !query || !location}
-              style={{
-                width: "100%",
-                padding: "13px",
-                background: !query || !location ? "#ddd" : "#1a1a1a",
-                color: "#fff",
-                border: "none",
-                borderRadius: 10,
-                fontFamily: "sans-serif",
-                fontSize: 14,
-                fontWeight: 700,
-                cursor: !query || !location ? "not-allowed" : "pointer",
-              }}
-            >
-              {searching ? "Searching..." : "Search Restaurants"}
-            </button>
-          </div>
+          )}
         </div>
 
         {/* Step 2 — Pick */}
-  {(stage === "pick" || stage === "weights" || stage === "result") &&
+        {(stage === "pick" || stage === "weights" || stage === "result") &&
           searchResults.length > 0 && (
             <div
               style={{
@@ -645,86 +764,67 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
                 border: `2px solid ${stage === "pick" ? "#c0392b" : "#ece9e4"}`,
                 marginBottom: 14,
+                overflow: "hidden",
               }}
             >
-              <div style={{ padding: "18px 22px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                  <span
-                    style={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: "50%",
-                      background: stage === "pick" ? "#c0392b" : "#1a1a1a",
-                      color: "#fff",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontSize: 12,
-                      fontWeight: 700,
-                      fontFamily: "sans-serif",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {stage !== "pick" ? "✓" : "2"}
-                  </span>
-                  <span
-                    style={{
-                      fontFamily: "sans-serif",
-                      fontWeight: 700,
-                      fontSize: 15,
-                      color: "#1a1a1a",
-                    }}
-                  >
-                    Pick a restaurant
-                  </span>
-                </div>
+              <StepHeader
+                stage="pick"
+                currentStage={stage}
+                stepNumber="2"
+                label="Pick a restaurant"
+                expanded={pickExpanded || stage === "pick"}
+                onToggle={() => setPickExpanded((v) => !v)}
+                summary={selected?.name || ""}
+              />
 
-                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                  {searchResults.map((r) => (
-                    <div
-                      key={r.place_id}
-                      onClick={() => pickRestaurant(r)}
-                      style={{
-                        padding: "12px 14px",
-                        borderRadius: 12,
-                        border: `1.5px solid ${
-                          selected?.place_id === r.place_id ? "#c0392b" : "#e8e4de"
-                        }`,
-                        background:
-                          selected?.place_id === r.place_id ? "#fdf5f4" : "#faf9f7",
-                        cursor: "pointer",
-                      }}
-                    >
+              {(pickExpanded || stage === "pick") && (
+                <div style={{ padding: "0 22px 18px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {searchResults.map((r) => (
                       <div
+                        key={r.place_id}
+                        onClick={() => pickRestaurant(r)}
                         style={{
-                          fontFamily: "sans-serif",
-                          fontWeight: 700,
-                          fontSize: 14,
-                          color: "#1a1a1a",
+                          padding: "12px 14px",
+                          borderRadius: 12,
+                          border: `1.5px solid ${selected?.place_id === r.place_id ? "#c0392b" : "#e8e4de"}`,
+                          background: selected?.place_id === r.place_id ? "#fdf5f4" : "#faf9f7",
+                          cursor: "pointer",
                         }}
                       >
-                        {r.name}
+                        <div
+                          style={{
+                            fontFamily: "sans-serif",
+                            fontWeight: 700,
+                            fontSize: 14,
+                            color: "#1a1a1a",
+                          }}
+                        >
+                          {r.name}
+                        </div>
+
+                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+                          <StarRow rating={r.rating || 0} size={12} color="#d4a017" />
+                          <span style={{ fontFamily: "sans-serif", fontSize: 12, color: "#888" }}>
+                            {r.rating} · {r.user_ratings_total?.toLocaleString()} reviews
+                          </span>
+                        </div>
+
+                        <div
+                          style={{
+                            fontFamily: "sans-serif",
+                            fontSize: 12,
+                            color: "#aaa",
+                            marginTop: 2,
+                          }}
+                        >
+                          {r.formatted_address}
+                        </div>
                       </div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-                        <StarRow rating={r.rating || 0} size={12} color="#d4a017" />
-                        <span style={{ fontFamily: "sans-serif", fontSize: 12, color: "#888" }}>
-                          {r.rating} · {r.user_ratings_total?.toLocaleString()} reviews
-                        </span>
-                      </div>
-                      <div
-                        style={{
-                          fontFamily: "sans-serif",
-                          fontSize: 12,
-                          color: "#aaa",
-                          marginTop: 2,
-                        }}
-                      >
-                        {r.formatted_address}
-                      </div>
-                    </div>
-                  ))}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -737,87 +837,72 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
               boxShadow: "0 2px 16px rgba(0,0,0,0.05)",
               border: `2px solid ${stage === "weights" ? "#c0392b" : "#ece9e4"}`,
               marginBottom: 14,
+              overflow: "hidden",
             }}
           >
-            <div style={{ padding: "18px 22px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <span
-                  style={{
-                    width: 26,
-                    height: 26,
-                    borderRadius: "50%",
-                    background: stage === "weights" ? "#c0392b" : "#1a1a1a",
-                    color: "#fff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    fontSize: 12,
-                    fontWeight: 700,
-                    fontFamily: "sans-serif",
-                    flexShrink: 0,
-                  }}
-                >
-                  {stage === "result" ? "✓" : "3"}
-                </span>
-                <span
-                  style={{
-                    fontFamily: "sans-serif",
-                    fontWeight: 700,
-                    fontSize: 15,
-                    color: "#1a1a1a",
-                  }}
-                >
-                  Set your priorities
-                </span>
-                <div
-                  style={{
-                    marginLeft: "auto",
-                    padding: "4px 12px",
-                    borderRadius: 99,
-                    background: total === 100 ? "#1a6e3c15" : "#c0392b15",
-                    border: `1.5px solid ${total === 100 ? "#1a6e3c" : "#c0392b"}`,
-                    fontFamily: "sans-serif",
-                    fontWeight: 700,
-                    fontSize: 13,
-                    color: total === 100 ? "#1a6e3c" : "#c0392b",
-                  }}
-                >
-                  {total}% {total === 100 ? "✓" : ""}
+            <StepHeader
+              stage="weights"
+              currentStage={stage}
+              stepNumber="3"
+              label="Set your priorities"
+              expanded={weightsExpanded || stage === "weights"}
+              onToggle={() => setWeightsExpanded((v) => !v)}
+              summary={activeWeightSummary}
+            />
+
+            {(weightsExpanded || stage === "weights") && (
+              <div style={{ padding: "0 22px 18px" }}>
+                <div style={{ display: "flex", alignItems: "center", marginBottom: 14 }}>
+                  <div
+                    style={{
+                      marginLeft: "auto",
+                      padding: "4px 12px",
+                      borderRadius: 99,
+                      background: total === 100 ? "#1a6e3c15" : "#c0392b15",
+                      border: `1.5px solid ${total === 100 ? "#1a6e3c" : "#c0392b"}`,
+                      fontFamily: "sans-serif",
+                      fontWeight: 700,
+                      fontSize: 13,
+                      color: total === 100 ? "#1a6e3c" : "#c0392b",
+                    }}
+                  >
+                    {total}% {total === 100 ? "✓" : ""}
+                  </div>
                 </div>
-              </div>
 
-              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
-                {CATEGORIES.map((cat) => (
-                  <WeightSlider
-                    key={cat.id}
-                    cat={cat}
-                    value={weights[cat.id]}
-                    onChange={handleWeight}
-                  />
-                ))}
-              </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 14 }}>
+                  {CATEGORIES.map((cat) => (
+                    <WeightSlider
+                      key={cat.id}
+                      cat={cat}
+                      value={weights[cat.id]}
+                      onChange={handleWeight}
+                    />
+                  ))}
+                </div>
 
-              {stage === "weights" && (
-                <button
-                  onClick={analyze}
-                  disabled={total !== 100}
-                  style={{
-                    width: "100%",
-                    padding: "14px",
-                    background: total !== 100 ? "#ddd" : "#1a1a1a",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 12,
-                    fontFamily: "sans-serif",
-                    fontSize: 15,
-                    fontWeight: 700,
-                    cursor: total !== 100 ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {total !== 100 ? `Adjust to 100% (${total}% now)` : "Get My TrueStar Rating →"}
-                </button>
-              )}
-            </div>
+                {stage === "weights" && (
+                  <button
+                    onClick={analyze}
+                    disabled={total !== 100}
+                    style={{
+                      width: "100%",
+                      padding: "14px",
+                      background: total !== 100 ? "#ddd" : "#1a1a1a",
+                      color: "#fff",
+                      border: "none",
+                      borderRadius: 12,
+                      fontFamily: "sans-serif",
+                      fontSize: 15,
+                      fontWeight: 700,
+                      cursor: total !== 100 ? "not-allowed" : "pointer",
+                    }}
+                  >
+                    {total !== 100 ? `Adjust to 100% (${total}% now)` : "Get My TrueStar Rating →"}
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         )}
 
@@ -853,27 +938,57 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
               <>
                 {/* Score Header */}
                 <div style={{ background: "#1a1a1a", padding: "24px 26px" }}>
-                  <h2
-                    style={{
-                      margin: "0 0 4px",
-                      fontFamily: "Georgia, serif",
-                      fontSize: 22,
-                      color: "#fff",
-                      fontWeight: 700,
-                    }}
-                  >
-                    {selected?.name}
-                  </h2>
-                  <div
-                    style={{
-                      fontFamily: "sans-serif",
-                      fontSize: 11,
-                      color: "#666",
-                      marginBottom: 20,
-                    }}
-                  >
-                    {selected?.formatted_address}
-                  </div>
+                  {googleMapsUrl ? (
+                    {googleMapsUrl}
+                      <h2
+                        style={{
+                          margin: "0 0 4px",
+                          fontFamily: "Georgia, serif",
+                          fontSize: 22,
+                          color: "#fff",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {selected?.name}
+                      </h2>
+                      <div
+                        style={{
+                          fontFamily: "sans-serif",
+                          fontSize: 11,
+                          color: "#9c9994",
+                          marginBottom: 20,
+                          textDecoration: "underline",
+                          textUnderlineOffset: "2px",
+                        }}
+                      >
+                        {selected?.formatted_address}
+                      </div>
+                    </a>
+                  ) : (
+                    <>
+                      <h2
+                        style={{
+                          margin: "0 0 4px",
+                          fontFamily: "Georgia, serif",
+                          fontSize: 22,
+                          color: "#fff",
+                          fontWeight: 700,
+                        }}
+                      >
+                        {selected?.name}
+                      </h2>
+                      <div
+                        style={{
+                          fontFamily: "sans-serif",
+                          fontSize: 11,
+                          color: "#666",
+                          marginBottom: 20,
+                        }}
+                      >
+                        {selected?.formatted_address}
+                      </div>
+                    </>
+                  )}
 
                   <div style={{ display: "flex", alignItems: "center", gap: 0 }}>
                     <div style={{ flex: 1 }}>
@@ -1074,6 +1189,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 {/* Calculation section */}
                 <div style={{ padding: "0 24px 14px" }}>
                   <button
+                    type="button"
                     onClick={() => setShowCalc(!showCalc)}
                     style={{
                       width: "100%",
@@ -1115,6 +1231,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                             >
                               {row.label}
                             </div>
+
                             <div style={{ fontFamily: "sans-serif", fontSize: 12, color: "#666" }}>
                               {row.mentions != null
                                 ? `${row.mentions} review mention${row.mentions === 1 ? "" : "s"}`
@@ -1192,6 +1309,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                   {keptReviews.length > 0 && (
                     <div style={{ marginBottom: 8 }}>
                       <button
+                        type="button"
                         onClick={() => setShowKept(!showKept)}
                         style={{
                           width: "100%",
@@ -1272,6 +1390,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                   {omittedReviews.length > 0 && (
                     <div style={{ marginBottom: 8 }}>
                       <button
+                        type="button"
                         onClick={() => setShowOmitted(!showOmitted)}
                         style={{
                           width: "100%",
@@ -1352,12 +1471,14 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 {/* Actions */}
                 <div style={{ padding: "8px 24px 24px", display: "flex", gap: 10 }}>
                   <button
+                    type="button"
                     onClick={() => {
                       setStage("weights");
                       setResult(null);
                       setShowKept(false);
                       setShowOmitted(false);
                       setShowCalc(false);
+                      setWeightsExpanded(true);
                     }}
                     style={{
                       flex: 1,
@@ -1374,7 +1495,9 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                   >
                     ← Adjust weights
                   </button>
+
                   <button
+                    type="button"
                     onClick={reset}
                     style={{
                       flex: 1,
