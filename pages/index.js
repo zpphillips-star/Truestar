@@ -327,7 +327,7 @@ export default function Home() {
     setShowOmitted(false);
     setShowCalc(false);
 
-    // collapse setup cards once analysis starts
+    // Collapse the 3 setup sections once analysis starts
     setSearchExpanded(false);
     setPickExpanded(false);
     setWeightsExpanded(false);
@@ -759,7 +759,8 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                 <div style={{ padding: "0 22px 18px" }}>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {searchResults.map((r) => (
-                                             key={r.place_id}
+                      <div
+                        key={r.place_id}
                         onClick={() => pickRestaurant(r)}
                         style={{
                           padding: "12px 14px",
@@ -920,7 +921,7 @@ Return ONLY this exact JSON (no markdown, no code blocks, just raw JSON):
                       margin: "0 0 4px",
                       fontFamily: "Georgia, serif",
                       fontSize: 22,
-                      color: "#fff",
+                      colorf",
                       fontWeight: 700,
                     }}
                   >
