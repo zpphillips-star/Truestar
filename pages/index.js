@@ -150,7 +150,7 @@ export default function Home() {
     setResult(null);
   };
 
-  const analyze = async () => {
+const analyze = async () => {
     if (!selected || total !== 100) return;
     setLoading(true);
     setStage("result");
@@ -159,6 +159,11 @@ export default function Home() {
     try {
       const revRes = await fetch(`/api/reviews?placeId=${selected.place_id}`);
       const revData = await revRes.json();
+
+      if (!revRes.ok) {
+        throw new Error(revData.error || "Failed to fetch reviews");
+      }
+
       const reviews = revData.result?.reviews || [];
 
       if (reviews.length === 0) {
@@ -200,7 +205,7 @@ RULES:
 4. For each active category, average star ratings from reviews mentioning that category
 5. TrueStar = sum of (categoryScore x weight/100) for active categories
 
-Return ONLY valid JSON:
+Return ONLY valid JSON with no markdown and no code blocks:
 {
   "reviewTags": [{"index": 0, "categories": ["food"], "counted": true}],
   "categoryScores": {"food": 4.5, "price": null, "service": null, "ambiance": null},
@@ -211,22 +216,27 @@ Return ONLY valid JSON:
   "insight": "<2-3 sentences specific about what shifted and why>"
 }`;
 
-      const aiRes = await fetch("https://api.anthropic.com/v1/messages", {
+      const aiRes = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-haiku-4-5-20251001",
-          max_tokens: 1000,
-          messages: [{ role: "user", content: prompt }],
-        }),
+        body: JSON.stringify({ prompt }),
       });
+
       const aiData = await aiRes.json();
-      const text = aiData.content?.find(b => b.type === "text")?.text || "{}";
-      const parsed = JSON.parse(text.replace(/```json|```/g, "").trim());
+
+      if (!aiRes.ok) {
+        throw new Error(aiData.error || "AI analysis failed");
+      }
+
+      const text = aiData.content?.find((b) => b.type === "text")?.text || "{}";
+      const jsonStr = text.replace(/```json|```/g, "").trim();
+      const parsed = JSON.parse(jsonStr);
       parsed._reviews = reviews;
       setResult(parsed);
+
     } catch (e) {
-      setError("Analysis failed. Please try again.");
+      console.error("Analyze error:", e);
+      setError(`Analysis failed: ${e.message}`);
       setStage("weights");
     }
     setLoading(false);
