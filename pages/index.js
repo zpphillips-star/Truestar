@@ -12,6 +12,7 @@ const CATEGORIES = [
 
 const DEFAULT_WEIGHTS = { food: 70, price: 30, service: 0, ambiance: 0 };
 
+// Rating stars using the brand amber
 function StarRow({ rating, size = 16, color = colors.amber }) {
   return (
     <span style={{ display: "inline-flex", gap: 2 }}>
@@ -26,7 +27,10 @@ function StarRow({ rating, size = 16, color = colors.amber }) {
                 <stop offset={`${pct * 100}%`} stopColor="#ddd" />
               </linearGradient>
             </defs>
-            <polygon points="10,1.5 12.6,7.2 18.9,7.8 14.2,12 15.8,18.2 10,14.8 4.2,18.2 5.8,12 1.1,7.8 7.4,7.2" fill={`url(#${id})`} />
+            <polygon
+              points="10,1.5 12.6,7.2 18.9,7.8 14.2,12 15.8,18.2 10,14.8 4.2,18.2 5.8,12 1.1,7.8 7.4,7.2"
+              fill={`url(#${id})`}
+            />
           </svg>
         );
       })}
@@ -39,8 +43,8 @@ function WeightSlider({ cat, value, onChange }) {
   return (
     <div style={{
       padding: "14px 16px", borderRadius: 14,
-      border: `2px solid ${active ? cat.color + "55" : colors.border}`,
-      background: active ? cat.color + "07" : colors.cream,
+      border: `2px solid ${active ? cat.color : colors.border}`,
+      background: active ? cat.color + "0d" : colors.white,
       transition: "all 0.2s",
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
@@ -52,23 +56,33 @@ function WeightSlider({ cat, value, onChange }) {
           </div>
         </div>
         <div style={{
-          minWidth: 52, textAlign: "center", padding: "4px 10px",
-          background: active ? cat.color : "#eee", borderRadius: 99,
+          minWidth: 56, textAlign: "center", padding: "5px 12px",
+          background: active ? cat.color : "#eee",
+          borderRadius: 99,
           fontFamily: "sans-serif", fontWeight: 700, fontSize: 15,
-          color: active ? "#fff" : "#bbb", transition: "all 0.2s",
+          color: active ? "#fff" : "#bbb",
+          transition: "all 0.2s",
+          boxShadow: active ? `0 2px 8px ${cat.color}44` : "none",
         }}>{value}%</div>
       </div>
-      <input type="range" min={0} max={100} step={5} value={value}
+      <input
+        type="range" min={0} max={100} step={5} value={value}
         onChange={(e) => onChange(cat.id, parseInt(e.target.value))}
-        style={{ width: "100%", accentColor: cat.color, cursor: "pointer" }} />
-      <div style={{ height: 4, borderRadius: 99, background: colors.tan, marginTop: 4, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${value}%`, background: active ? cat.color : "#ccc", borderRadius: 99, transition: "width 0.15s" }} />
+        style={{ width: "100%", accentColor: cat.color, cursor: "pointer" }}
+      />
+      <div style={{ height: 5, borderRadius: 99, background: colors.tan, marginTop: 5, overflow: "hidden" }}>
+        <div style={{
+          height: "100%", width: `${value}%`,
+          background: active ? cat.color : "#ccc",
+          borderRadius: 99, transition: "width 0.15s",
+          boxShadow: active ? `0 0 6px ${cat.color}88` : "none",
+        }} />
       </div>
     </div>
   );
 }
 
-function CollapsedStep({ num, label, summary, onEdit }) {
+function CollapsedStep({ label, summary, onEdit }) {
   return (
     <div style={{
       background: colors.white, borderRadius: 14,
@@ -80,7 +94,7 @@ function CollapsedStep({ num, label, summary, onEdit }) {
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
         <span style={{
           width: 24, height: 24, borderRadius: "50%",
-          background: colors.ink, color: "#fff",
+          background: colors.forest, color: "#fff",
           display: "flex", alignItems: "center", justifyContent: "center",
           fontSize: 11, fontWeight: 700, fontFamily: "sans-serif", flexShrink: 0,
         }}>✓</span>
@@ -94,6 +108,41 @@ function CollapsedStep({ num, label, summary, onEdit }) {
         padding: "5px 12px", fontFamily: "sans-serif", fontSize: 12,
         color: colors.textMuted, cursor: "pointer", fontWeight: 600, flexShrink: 0,
       }}>Edit</button>
+    </div>
+  );
+}
+
+// Score diff pill — bold use of green/red
+function DiffBadge({ diff }) {
+  if (diff === 0) return null;
+  const up = diff > 0;
+  return (
+    <div style={{
+      padding: "8px 16px", borderRadius: 99,
+      background: up ? colors.forest : colors.red,
+      fontFamily: "sans-serif", fontWeight: 700, fontSize: 17,
+      color: "#fff",
+      boxShadow: up ? `0 2px 12px ${colors.forest}66` : `0 2px 12px ${colors.red}66`,
+      letterSpacing: "0.01em",
+    }}>
+      {up ? "+" : ""}{diff} ★
+    </div>
+  );
+}
+
+// Top match badge — uses plum for premium feel
+function TopMatchBadge({ score }) {
+  if (score < 4.5) return null;
+  return (
+    <div style={{
+      display: "inline-flex", alignItems: "center", gap: 6,
+      padding: "4px 12px", borderRadius: 99,
+      background: colors.badgeTopBg,
+      border: `1px solid ${colors.plum}44`,
+      fontFamily: "sans-serif", fontSize: 11, fontWeight: 700,
+      color: colors.plum,
+    }}>
+      ★ Top match
     </div>
   );
 }
@@ -112,6 +161,7 @@ export default function Home() {
   const [showOmitted, setShowOmitted] = useState(false);
   const [showCalc, setShowCalc] = useState(false);
   const [error, setError] = useState(null);
+  const [totalFlash, setTotalFlash] = useState(false);
 
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
   const activeWeightSummary = CATEGORIES.filter(c => weights[c.id] > 0).map(c => `${c.label} ${weights[c.id]}%`).join(" · ");
@@ -139,6 +189,11 @@ export default function Home() {
         });
       }
       Object.keys(next).forEach((k) => { if (next[k] < 0) next[k] = 0; });
+      const newTotal = Object.values(next).reduce((a, b) => a + b, 0);
+      if (newTotal === 100) {
+        setTotalFlash(true);
+        setTimeout(() => setTotalFlash(false), 600);
+      }
       return next;
     });
   }, []);
@@ -327,16 +382,22 @@ Return ONLY raw JSON (no markdown, no code blocks):
 
   const isResult = stage === "result";
 
+  // Page bg shifts subtly by stage
+  const pageBg = isResult ? "#ede8de" : stage === "weights" ? "#f0ece3" : colors.cream;
+
   return (
-    <div style={{ minHeight: "100vh", background: colors.cream, display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <div style={{ minHeight: "100vh", background: pageBg, display: "flex", flexDirection: "column", alignItems: "center", transition: "background 0.6s ease" }}>
       <style>{`
         * { box-sizing: border-box; }
         input[type=range] { height: 4px; }
         .step-card { transition: all 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(8px) } to { opacity: 1; transform: translateY(0) } }
+        @keyframes flashGreen { 0%,100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        .total-flash { animation: flashGreen 0.5s ease; }
+        button:hover { opacity: 0.88; }
       `}</style>
 
-      {/* ── HEADER — uses exact traced Logo from your file ── */}
+      {/* ── HEADER ── */}
       <div style={{ paddingTop: 48, paddingBottom: 6, textAlign: "center" }}>
         <Logo size={32} starColor={colors.amber} textColor={colors.ink} gap={14} />
         <p style={{ margin: "8px 0 0", fontFamily: "sans-serif", fontSize: 11, color: colors.textMuted, letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 300 }}>
@@ -354,15 +415,12 @@ Return ONLY raw JSON (no markdown, no code blocks):
 
         {/* ── STEP 1: Search ── */}
         {isResult ? (
-          <CollapsedStep
-            num={1} label="Restaurant"
-            summary={selected?.name}
-            onEdit={() => { setStage("search"); setResult(null); setSearchResults([]); setSelected(null); setQuery(""); setLocation(""); }}
-          />
+          <CollapsedStep label="Restaurant" summary={selected?.name}
+            onEdit={() => { setStage("search"); setResult(null); setSearchResults([]); setSelected(null); setQuery(""); setLocation(""); }} />
         ) : (
           <div className="step-card" style={{
             background: colors.white, borderRadius: 20,
-            boxShadow: "0 2px 16px rgba(56,48,31,0.05)",
+            boxShadow: "0 2px 16px rgba(56,48,31,0.06)",
             border: `2px solid ${stage === "search" ? colors.red : colors.border}`,
             marginBottom: 14,
           }}>
@@ -381,7 +439,7 @@ Return ONLY raw JSON (no markdown, no code blocks):
                 onKeyDown={(e) => e.key === "Enter" && searchRestaurants()}
                 style={{ width: "100%", padding: "12px 14px", border: `1.5px solid ${colors.border}`, borderRadius: 10, fontSize: 14, fontFamily: "sans-serif", background: colors.cream, outline: "none", marginBottom: 12 }} />
               <button onClick={searchRestaurants} disabled={searching || !query || !location}
-                style={{ width: "100%", padding: "13px", background: !query || !location ? "#ddd" : colors.ink, color: "#fff", border: "none", borderRadius: 10, fontFamily: "sans-serif", fontSize: 14, fontWeight: 700, cursor: !query || !location ? "not-allowed" : "pointer" }}>
+                style={{ width: "100%", padding: "13px", background: !query || !location ? "#ddd" : colors.ink, color: "#fff", border: "none", borderRadius: 10, fontFamily: "sans-serif", fontSize: 14, fontWeight: 700, cursor: !query || !location ? "not-allowed" : "pointer", transition: "opacity 0.15s" }}>
                 {searching ? "Searching..." : "Search Restaurants"}
               </button>
             </div>
@@ -390,16 +448,13 @@ Return ONLY raw JSON (no markdown, no code blocks):
 
         {/* ── STEP 2: Pick ── */}
         {isResult ? (
-          <CollapsedStep
-            num={2} label="Selected"
-            summary={`${selected?.name} · ${selected?.rating}★ official`}
-            onEdit={() => { setStage("pick"); setResult(null); }}
-          />
+          <CollapsedStep label="Selected" summary={`${selected?.name} · ${selected?.rating}★ official`}
+            onEdit={() => { setStage("pick"); setResult(null); }} />
         ) : (
           (stage === "pick" || stage === "weights") && searchResults.length > 0 && (
             <div className="step-card" style={{
               background: colors.white, borderRadius: 20,
-              boxShadow: "0 2px 16px rgba(56,48,31,0.05)",
+              boxShadow: "0 2px 16px rgba(56,48,31,0.06)",
               border: `2px solid ${stage === "pick" ? colors.red : colors.border}`,
               marginBottom: 14, animation: "fadeIn 0.3s ease",
             }}>
@@ -416,8 +471,10 @@ Return ONLY raw JSON (no markdown, no code blocks):
                       style={{ padding: "12px 14px", borderRadius: 12, border: `1.5px solid ${selected?.place_id === r.place_id ? colors.red : colors.border}`, background: selected?.place_id === r.place_id ? "#fdf5f4" : colors.cream, cursor: "pointer", transition: "all 0.15s" }}>
                       <div style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 14, color: colors.ink }}>{r.name}</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
-                        <StarRow rating={r.rating || 0} size={12} color={colors.amber} />
-                        <span style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.textMuted }}>{r.rating} · {r.user_ratings_total?.toLocaleString()} reviews</span>
+                        <StarRow rating={r.rating || 0} size={13} color={colors.amber} />
+                        {/* Rating number in amber */}
+                        <span style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 700, color: colors.amber }}>{r.rating}</span>
+                        <span style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.textMuted }}>· {r.user_ratings_total?.toLocaleString()} reviews</span>
                       </div>
                       <div style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{r.formatted_address}</div>
                     </div>
@@ -430,16 +487,13 @@ Return ONLY raw JSON (no markdown, no code blocks):
 
         {/* ── STEP 3: Weights ── */}
         {isResult ? (
-          <CollapsedStep
-            num={3} label="Your priorities"
-            summary={activeWeightSummary}
-            onEdit={() => { setStage("weights"); setResult(null); }}
-          />
+          <CollapsedStep label="Your priorities" summary={activeWeightSummary}
+            onEdit={() => { setStage("weights"); setResult(null); }} />
         ) : (
           (stage === "weights") && selected && (
             <div className="step-card" style={{
               background: colors.white, borderRadius: 20,
-              boxShadow: "0 2px 16px rgba(56,48,31,0.05)",
+              boxShadow: "0 2px 16px rgba(56,48,31,0.06)",
               border: `2px solid ${colors.red}`,
               marginBottom: 14, animation: "fadeIn 0.3s ease",
             }}>
@@ -447,7 +501,18 @@ Return ONLY raw JSON (no markdown, no code blocks):
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
                   <span style={{ width: 26, height: 26, borderRadius: "50%", background: colors.red, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, fontFamily: "sans-serif", flexShrink: 0 }}>3</span>
                   <span style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 15, color: colors.ink }}>Set your priorities</span>
-                  <div style={{ marginLeft: "auto", padding: "4px 12px", borderRadius: 99, background: total === 100 ? colors.badgeGreatBg : colors.badgePoorBg, border: `1.5px solid ${total === 100 ? colors.forest : colors.red}`, fontFamily: "sans-serif", fontWeight: 700, fontSize: 13, color: total === 100 ? colors.forest : colors.red }}>
+                  {/* Total pill — flashes green when 100% hit */}
+                  <div
+                    className={totalFlash ? "total-flash" : ""}
+                    style={{
+                      marginLeft: "auto", padding: "5px 14px", borderRadius: 99,
+                      background: total === 100 ? colors.forest : colors.badgePoorBg,
+                      border: `1.5px solid ${total === 100 ? colors.forest : colors.red}`,
+                      fontFamily: "sans-serif", fontWeight: 700, fontSize: 13,
+                      color: total === 100 ? "#fff" : colors.red,
+                      transition: "all 0.3s ease",
+                      boxShadow: total === 100 ? `0 2px 10px ${colors.forest}55` : "none",
+                    }}>
                     {total}% {total === 100 ? "✓" : ""}
                   </div>
                 </div>
@@ -457,7 +522,7 @@ Return ONLY raw JSON (no markdown, no code blocks):
                   ))}
                 </div>
                 <button onClick={analyze} disabled={total !== 100}
-                  style={{ width: "100%", padding: "14px", background: total !== 100 ? "#ddd" : colors.red, color: "#fff", border: "none", borderRadius: 12, fontFamily: "sans-serif", fontSize: 15, fontWeight: 700, cursor: total !== 100 ? "not-allowed" : "pointer", letterSpacing: "0.02em", transition: "background 0.2s" }}>
+                  style={{ width: "100%", padding: "14px", background: total !== 100 ? "#ddd" : colors.red, color: "#fff", border: "none", borderRadius: 12, fontFamily: "sans-serif", fontSize: 15, fontWeight: 700, cursor: total !== 100 ? "not-allowed" : "pointer", letterSpacing: "0.02em", transition: "all 0.2s", boxShadow: total === 100 ? `0 4px 16px ${colors.red}44` : "none" }}>
                   {total !== 100 ? `Adjust to 100% (${total}% now)` : "Get My TrueStar Rating →"}
                 </button>
               </div>
@@ -469,48 +534,51 @@ Return ONLY raw JSON (no markdown, no code blocks):
         {stage === "result" && (
           <div style={{ background: colors.white, borderRadius: 20, boxShadow: "0 4px 32px rgba(56,48,31,0.10)", border: `2px solid ${colors.border}`, overflow: "hidden", animation: "fadeIn 0.4s ease" }}>
             {loading ? (
-              /* ── SPINNER — uses real TrueStar star mark ── */
               <div style={{ padding: "60px 24px", textAlign: "center" }}>
-                <StarSpinner
-                  size={56}
-                  color={colors.amber}
-                  label="Reading reviews with your priorities in mind…"
-                />
+                <StarSpinner size={56} color={colors.amber} label="Reading reviews with your priorities in mind…" />
               </div>
             ) : result ? (
               <>
-                {/* Score Header */}
+                {/* ── Score Header — ink dark surface ── */}
                 <div style={{ background: colors.ink, padding: "28px 26px" }}>
-                  <h2 style={{ margin: "0 0 4px", fontFamily: "sans-serif", fontSize: 22, color: "#fff", fontWeight: 700 }}>{selected?.name}</h2>
-                  <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#666", marginBottom: 24 }}>{selected?.formatted_address}</div>
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
+                    <div>
+                      <h2 style={{ margin: "0 0 3px", fontFamily: "sans-serif", fontSize: 22, color: "#fff", fontWeight: 700 }}>{selected?.name}</h2>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#666" }}>{selected?.formatted_address}</div>
+                    </div>
+                    {/* Top match badge — plum, only for 4.5+ */}
+                    <TopMatchBadge score={result.trueScore} />
+                  </div>
 
                   <div style={{ display: "flex", alignItems: "center" }}>
+                    {/* Google rating */}
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#666", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Google Rating</div>
-                      <div style={{ fontFamily: "sans-serif", fontSize: 34, color: "#888", fontWeight: 700, lineHeight: 1 }}>{selected?.rating?.toFixed(1)}</div>
-                      <div style={{ marginTop: 6 }}><StarRow rating={selected?.rating || 0} size={14} color="#666" /></div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#666", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Google</div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 32, color: "#888", fontWeight: 700, lineHeight: 1 }}>{selected?.rating?.toFixed(1)}</div>
+                      <div style={{ marginTop: 5 }}><StarRow rating={selected?.rating || 0} size={13} color="#666" /></div>
                       <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#555", marginTop: 4 }}>{selected?.user_ratings_total?.toLocaleString()} reviews</div>
                     </div>
 
-                    <div style={{ padding: "0 20px", textAlign: "center" }}>
-                      <div style={{ width: 1, height: 70, background: "#333", margin: "0 auto 8px" }} />
-                      <div style={{ fontSize: 18, color: diff > 0 ? "#4caf76" : diff < 0 ? "#e87070" : "#555", fontWeight: 700 }}>
-                        {diff > 0 ? `+${diff}` : diff !== 0 ? diff : "—"}
-                      </div>
+                    {/* Diff badge — bold color */}
+                    <div style={{ padding: "0 16px" }}>
+                      <DiffBadge diff={diff} />
                     </div>
 
+                    {/* TrueStar score — amber, glowing */}
                     <div style={{ flex: 1, textAlign: "right" }}>
                       <div style={{ fontFamily: "sans-serif", fontSize: 10, color: colors.amber, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>TrueStar</div>
-                      <div style={{ fontFamily: "sans-serif", fontSize: 44, color: "#fff", fontWeight: 700, lineHeight: 1 }}>{result.trueScore?.toFixed(1)}</div>
-                      <div style={{ marginTop: 6 }}><StarRow rating={result.trueScore || 0} size={16} color={colors.amber} /></div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 44, color: colors.amber, fontWeight: 700, lineHeight: 1, textShadow: `0 0 20px ${colors.amber}66` }}>
+                        {result.trueScore?.toFixed(1)}
+                      </div>
+                      <div style={{ marginTop: 5 }}><StarRow rating={result.trueScore || 0} size={15} color={colors.amber} /></div>
                       <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#666", marginTop: 4 }}>{result.reviewsCounted} reviews counted</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Headline */}
-                <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${colors.border}`, background: colors.cream }}>
-                  <p style={{ margin: 0, fontFamily: "sans-serif", fontSize: 16, color: colors.ink, fontStyle: "italic", lineHeight: 1.7 }}>"{result.headline}"</p>
+                <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${colors.border}`, background: "#faf7f2" }}>
+                  <p style={{ margin: 0, fontFamily: "sans-serif", fontSize: 15, color: colors.ink, fontStyle: "italic", lineHeight: 1.7 }}>"{result.headline}"</p>
                 </div>
 
                 {/* Why it changed */}
@@ -523,16 +591,16 @@ Return ONLY raw JSON (no markdown, no code blocks):
                   </div>
                 </div>
 
-                {/* Kept / Omitted summaries */}
+                {/* Kept / Omitted — bold green and red */}
                 <div style={{ padding: "0 24px" }}>
-                  <div style={{ padding: "14px 16px", borderRadius: 12, background: colors.badgeGreatBg, border: `1.5px solid ${colors.forest}44`, marginBottom: 10 }}>
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: colors.badgeGreatBg, border: `2px solid ${colors.forest}`, marginBottom: 10 }}>
                     <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: colors.forest, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
                       ✅ {result.reviewsCounted} review{result.reviewsCounted !== 1 ? "s" : ""} counted
                     </div>
                     <div style={{ fontFamily: "sans-serif", fontSize: 13, color: colors.ink, lineHeight: 1.65 }}>{result.keptSummary}</div>
                   </div>
 
-                  <div style={{ padding: "14px 16px", borderRadius: 12, background: colors.badgePoorBg, border: `1.5px solid ${colors.red}44`, marginBottom: 16 }}>
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: colors.badgePoorBg, border: `2px solid ${colors.red}`, marginBottom: 16 }}>
                     <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: colors.red, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
                       🚫 {result.reviewsExcluded} review{result.reviewsExcluded !== 1 ? "s" : ""} omitted
                     </div>
@@ -548,20 +616,24 @@ Return ONLY raw JSON (no markdown, no code blocks):
                   {showCalc && (
                     <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                       {calcRows.map((row) => (
-                        <div key={row.id} style={{ padding: "12px 14px", borderRadius: 10, background: colors.white, border: `1px solid ${colors.border}` }}>
+                        <div key={row.id} style={{ padding: "12px 14px", borderRadius: 10, background: colors.white, border: `1.5px solid ${row.color}44` }}>
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
                             <div style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 13, color: row.color }}>{row.label}</div>
                             <div style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.textMuted }}>{row.mentions != null ? `${row.mentions} mention${row.mentions === 1 ? "" : "s"}` : ""}</div>
                           </div>
                           <div style={{ fontFamily: "sans-serif", fontSize: 13, color: colors.textSecondary }}>
-                            {row.score.toFixed(1)} × {row.weight}% = <strong>{row.contribution.toFixed(2)}</strong>
+                            {row.score.toFixed(1)} × {row.weight}% = <strong style={{ color: row.color }}>{row.contribution.toFixed(2)}</strong>
+                          </div>
+                          {/* Mini bar */}
+                          <div style={{ height: 4, borderRadius: 99, background: colors.tan, marginTop: 8, overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: `${(row.score / 5) * 100}%`, background: row.color, borderRadius: 99 }} />
                           </div>
                         </div>
                       ))}
-                      <div style={{ padding: "12px 14px", borderRadius: 10, background: colors.ink, color: "#fff" }}>
-                        <div style={{ fontFamily: "sans-serif", fontSize: 11, opacity: 0.6, marginBottom: 4 }}>Final score</div>
-                        <div style={{ fontFamily: "sans-serif", fontSize: 22, fontWeight: 700 }}>
-                          {calcRows.reduce((sum, row) => sum + row.contribution, 0).toFixed(2)} → {result.trueScore.toFixed(1)}
+                      <div style={{ padding: "14px 16px", borderRadius: 10, background: colors.ink, color: "#fff" }}>
+                        <div style={{ fontFamily: "sans-serif", fontSize: 11, color: colors.amber, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>TrueStar Score</div>
+                        <div style={{ fontFamily: "sans-serif", fontSize: 28, fontWeight: 700, color: colors.amber }}>
+                          {result.trueScore.toFixed(1)}
                         </div>
                       </div>
                       {missingActiveCategories.length > 0 && (
@@ -577,16 +649,16 @@ Return ONLY raw JSON (no markdown, no code blocks):
                 <div style={{ padding: "0 24px 10px" }}>
                   {keptReviews.length > 0 && (
                     <div style={{ marginBottom: 8 }}>
-                      <button onClick={() => setShowKept(!showKept)} style={{ width: "100%", padding: "10px 14px", background: colors.badgeGreatBg, border: `1.5px solid ${colors.forest}44`, borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: colors.forest, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
+                      <button onClick={() => setShowKept(!showKept)} style={{ width: "100%", padding: "10px 14px", background: colors.badgeGreatBg, border: `1.5px solid ${colors.forest}`, borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: colors.forest, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
                         {showKept ? "▲" : "▼"} Dig into the {keptReviews.length} review{keptReviews.length === 1 ? "" : "s"} that counted
                       </button>
                       {showKept && (
                         <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 8 }}>
                           {keptReviews.map(({ review, index, tag }) => (
-                            <div key={index} style={{ padding: "12px 14px", borderRadius: 10, background: colors.white, border: `1px solid ${colors.border}` }}>
+                            <div key={index} style={{ padding: "12px 14px", borderRadius: 10, background: colors.white, border: `1px solid ${colors.forest}33` }}>
                               <StarRow rating={review.rating} size={13} color={colors.amber} />
                               <p style={{ margin: "8px 0 0", fontFamily: "sans-serif", fontSize: 13, color: colors.textSecondary, lineHeight: 1.6 }}>{review.text}</p>
-                              {tag?.reason && <div style={{ marginTop: 6, fontFamily: "sans-serif", fontSize: 12, color: colors.forest }}>Why it counted: {tag.reason}</div>}
+                              {tag?.reason && <div style={{ marginTop: 6, fontFamily: "sans-serif", fontSize: 12, color: colors.forest, fontWeight: 600 }}>Why it counted: {tag.reason}</div>}
                             </div>
                           ))}
                         </div>
@@ -597,7 +669,7 @@ Return ONLY raw JSON (no markdown, no code blocks):
                   {/* Omitted reviews */}
                   {omittedReviews.length > 0 && (
                     <div style={{ marginBottom: 8 }}>
-                      <button onClick={() => setShowOmitted(!showOmitted)} style={{ width: "100%", padding: "10px 14px", background: colors.badgePoorBg, border: `1.5px solid ${colors.red}44`, borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: colors.red, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
+                      <button onClick={() => setShowOmitted(!showOmitted)} style={{ width: "100%", padding: "10px 14px", background: colors.badgePoorBg, border: `1.5px solid ${colors.red}`, borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: colors.red, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
                         {showOmitted ? "▲" : "▼"} See the {omittedReviews.length} review{omittedReviews.length === 1 ? "" : "s"} that didn't count
                       </button>
                       {showOmitted && (
@@ -606,7 +678,7 @@ Return ONLY raw JSON (no markdown, no code blocks):
                             <div key={index} style={{ padding: "12px 14px", borderRadius: 10, background: "#fdf5f5", border: `1px solid ${colors.red}33` }}>
                               <StarRow rating={review.rating} size={13} color="#ccc" />
                               <p style={{ margin: "8px 0 0", fontFamily: "sans-serif", fontSize: 13, color: colors.textMuted, lineHeight: 1.6 }}>{review.text}</p>
-                              {tag?.reason && <div style={{ marginTop: 6, fontFamily: "sans-serif", fontSize: 12, color: colors.red }}>Why omitted: {tag.reason}</div>}
+                              {tag?.reason && <div style={{ marginTop: 6, fontFamily: "sans-serif", fontSize: 12, color: colors.red, fontWeight: 600 }}>Why omitted: {tag.reason}</div>}
                             </div>
                           ))}
                         </div>
