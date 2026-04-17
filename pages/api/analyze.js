@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  // Rate limit: 10 req/min per IP (Anthropic is expensive)
+  // Rate limit: 10 req/min per IP
   const ip = getIp(req);
   const { allowed, remaining, resetIn } = rateLimit(ip, "analyze", 10);
   if (!allowed) {
@@ -30,7 +30,8 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-haiku-4-5",
-        max_tokens: 4000,
+        max_tokens: 1500,
+        system: "You are a JSON-only API. Always respond with a single raw JSON object and nothing else. Never use markdown, backticks, code blocks, or any explanation outside the JSON.",
         messages: [{ role: "user", content: prompt }],
       }),
     });
