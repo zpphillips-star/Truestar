@@ -32,9 +32,16 @@ function tsGetRestaurantInfo() {
 // ── Review scraping ─────────────────────────────────────────────────────────
 
 function tsScrapeReviews() {
+  // Expand any collapsed reviews first
   document.querySelectorAll('button.w8nwRe, [jsaction*="pane.review.expandReview"]').forEach(btn => {
     try { btn.click(); } catch (e) {}
   });
+
+  // Try to scroll the reviews panel to trigger lazy loading
+  var scrollPanel = document.querySelector('[role="feed"]')
+    || document.querySelector('.m6QErb.DxyBCb')
+    || document.querySelector('.m6QErb[aria-label]');
+  if (scrollPanel) { scrollPanel.scrollTop += 1200; }
 
   const reviews = [];
   const seen = new Set();
@@ -66,37 +73,33 @@ function tsScrapeReviews() {
 function tsBuildPrompt(restaurant, reviews, weights) {
   const active = TS_CATEGORIES.filter(c => weights[c.id] > 0);
   const weightDesc = active.map(c => c.label + ': ' + weights[c.id] + '%').join(', ');
-  const reviewsText = reviews.map((r, i) => 'Review ' + i + ' (' + r.rating + ' stars): "' + r.text + '"').join('\n');
+  // Use the most recent reviews — recency is a feature, not a limitation
+  const capped = reviews.slice(0, 50);
+  const reviewsText = capped.map((r, i) => 'Review ' + i + ' (' + r.rating + ' stars): "' + r.text + '"').join('\n');
 
-  return 'You are TrueStar, a sharp but friendly restaurant rating analyzer. Speak casually, clearly, and specifically.\n\n'
+  return 'You are TrueStar, a restaurant rating analyzer focused on recent experience.\n\n'
     + 'Restaurant: ' + restaurant.name + '\n'
-    + 'Official Google Rating: ' + restaurant.rating + ' (' + restaurant.total + ' total reviews)\n\n'
-    + 'Reviews:\n' + reviewsText + '\n\n'
+    + 'Official Google Rating: ' + restaurant.rating + ' (' + restaurant.total + ' total reviews, spanning years)\n\n'
+    + 'Reviews analyzed (most recent only):\n' + reviewsText + '\n\n'
     + 'User cares about (weights add to 100%):\n' + weightDesc + '\n\n'
     + 'Category definitions:\n'
     + '- food: taste, flavor, dishes, cooking, ingredients, freshness\n'
     + '- price: cost, value, expensive, cheap, portions, worth it\n'
     + '- service: staff, waiters, attentiveness, speed, hospitality\n'
     + '- ambiance: decor, atmosphere, vibe, noise, cleanliness, views\n\n'
-    + 'YOUR JOB:\n'
-    + '1. Tag each review with which categories it mentions\n'
-    + '2. A review COUNTS if it mentions at least one category the user cares about (weight > 0)\n'
-    + '3. A review is OMITTED if it only talks about things the user does not care about (weight = 0)\n'
-    + '4. For each active category, calculate the average star rating from reviews that mention it\n'
-    + '5. TrueStar = weighted average using only active categories\n'
-    + '6. Be specific. Mention real details from the reviews.\n\n'
-    + 'Return ONLY raw JSON (no markdown, no code blocks):\n'
+    + 'TASK: Analyze the reviews and return ONLY a raw JSON object (no markdown, no backticks, no explanation).\n'
+    + 'For each active category: count how many reviews mention it, average their star ratings.\n'
+    + 'TrueStar score = weighted average across active categories.\n'
+    + 'Your headline and whyAdjusted should emphasize what the restaurant is like RIGHT NOW.\n\n'
     + '{\n'
-    + '  "reviewTags": [{"index": 0, "categories": ["food","service"], "counted": true, "reason": "..."}],\n'
     + '  "categoryScores": {"food": 4.2, "price": 3.8, "service": null, "ambiance": null},\n'
-    + '  "categoryMentions": {"food": 4, "price": 2, "service": 0, "ambiance": 0},\n'
-    + '  "reviewsCounted": 4,\n'
-    + '  "reviewsExcluded": 1,\n'
+    + '  "categoryMentions": {"food": 14, "price": 8, "service": 0, "ambiance": 0},\n'
+    + '  "reviewsCounted": 22,\n'
+    + '  "reviewsExcluded": 8,\n'
     + '  "trueScore": 4.1,\n'
-    + '  "headline": "One punchy sentence about what the TrueStar score reveals",\n'
-    + '  "whyAdjusted": "Specific explanation of why the score changed",\n'
-    + '  "keptSummary": "What the counted reviews mostly said",\n'
-    + '  "omittedSummary": "What the omitted reviews focused on and why they did not matter"\n'
+    + '  "headline": "One punchy sentence about what the restaurant is like right now",\n'
+    + '  "whyAdjusted": "Why the score differs from Google\'s all-time average",\n'
+    + '  "omittedSummary": "What the excluded reviews focused on"\n'
     + '}';
 }
 
@@ -209,49 +212,154 @@ function tsCloseSidebar() {
   tsSidebarOpen = false;
 }
 
+// ── Auto-load reviews ────────────────────────────────────────────────────────
+
+function tsClickReviewsTab() {
+  // Try several selectors Google Maps uses for the Reviews tab
+  var tab = document.querySelector('button[aria-label*="Reviews"]')
+    || Array.from(document.querySelectorAll('button[role="tab"]')).find(function(b) {
+         return b.textContent.trim().toLowerCase().includes('review');
+       })
+    || document.querySelector('[jsaction*="pane.reviews"]');
+  if (tab) { try { tab.click(); } catch(e) {} }
+}
+
+function tsGetScrollPanel() {
+  return document.querySelector('[role="feed"]')
+    || document.querySelector('.m6QErb.DxyBCb.kA9KIf')
+    || document.querySelector('.m6QErb.DxyBCb')
+    || document.querySelector('.m6QErb[aria-label]');
+}
+
+// Scroll the reviews panel, collecting reviews at every step (handles Maps virtualization)
+function tsAutoLoadReviews(onDone) {
+  var btn = document.getElementById('ts-analyze');
+  var resultsEl = document.getElementById('ts-results');
+
+  tsClickReviewsTab();
+
+  var collected = {};  // keyed by text — survives DOM removal
+  var attempts = 0;
+  var maxAttempts = 60;
+  var maxReviews  = 100;
+  var lastCount = 0;
+  var stableRounds = 0;
+
+  btn.textContent = 'Loading reviews...';
+  resultsEl.innerHTML = '<div class="ts-loading">📜 ' + tsGetTagline() + '</div>';
+
+  function collectNow() {
+    // Expand collapsed reviews
+    document.querySelectorAll('button.w8nwRe, [jsaction*="pane.review.expandReview"]').forEach(function(b) {
+      try { b.click(); } catch(e) {}
+    });
+    document.querySelectorAll('div[data-review-id]').forEach(function(container) {
+      var starEl = container.querySelector('[aria-label*="star"], [aria-label*="Star"], [aria-label*=" stars"]');
+      var textEl = container.querySelector('span.wiI7pd, span[class*="review"], .MyEned span');
+      var text = textEl ? textEl.innerText.trim() : null;
+      if (!text || text.length < 15 || collected[text]) return;
+      var ratingMatch = starEl ? starEl.getAttribute('aria-label').match(/(\d+(\.\d+)?)/) : null;
+      collected[text] = { rating: ratingMatch ? parseFloat(ratingMatch[1]) : 3, text: text.substring(0, 600) };
+    });
+  }
+
+  function scrollStep() {
+    collectNow(); // grab whatever is in the DOM right now before scrolling removes it
+
+    var collectedCount = Object.keys(collected).length;
+    if (btn) btn.textContent = 'Loading… (' + collectedCount + ' reviews)';
+
+    if (collectedCount === lastCount) {
+      stableRounds++;
+    } else {
+      stableRounds = 0;
+    }
+    lastCount = collectedCount;
+
+    if (stableRounds >= 8 || attempts >= maxAttempts || collectedCount >= maxReviews) {
+      btn.textContent = 'Analyzing...';
+      resultsEl.innerHTML = '';
+      onDone(Object.values(collected));
+      return;
+    }
+
+    var panel = tsGetScrollPanel();
+    if (panel) panel.scrollTop = panel.scrollHeight;
+    attempts++;
+    setTimeout(scrollStep, 1500);
+  }
+
+  setTimeout(scrollStep, 1200);
+}
+
+// ── Rotating taglines (daily) ─────────────────────────────────────────────────
+var TS_TAGLINES = [
+  "Pulling the most recent reviews — because we've all seen an unrecognizable 10-year-old profile picture.",
+  "Reading fresh reviews, not the ones from when this place still had a fax number.",
+  "Skipping the 2014 reviews — the chef has probably changed since then.",
+  "Recent reviews only — because that 5-star from 2011 isn't feeding anyone today.",
+  "Grabbing the latest takes — old reviews are like old Yelp photos: deeply suspicious.",
+  "Loading fresh opinions — the internet never forgets, but we only care about lately.",
+  "Pulling recent reviews — not the ones your uncle wrote after the place 'really found itself.'",
+  "Recent reviews only — restaurants evolve. Some for better. Some for worse. Let's find out."
+];
+function tsGetTagline() {
+  var dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  return TS_TAGLINES[dayOfYear % TS_TAGLINES.length];
+}
+
 // ── Analysis ─────────────────────────────────────────────────────────────────
 
 function tsRunAnalysis() {
   var btn = document.getElementById('ts-analyze');
   var resultsEl = document.getElementById('ts-results');
 
-  btn.textContent = 'Analyzing...';
+  btn.textContent = 'Loading…';
   btn.disabled = true;
   resultsEl.innerHTML = '';
 
-  var reviews = tsScrapeReviews();
+  // Auto-load all reviews first (reviews passed directly from scroll collector)
+  tsAutoLoadReviews(function(reviews) {
 
-  if (reviews.length === 0) {
-    resultsEl.innerHTML = '<div class="ts-error">No reviews found. Make sure you can see reviews on this page, then try again.</div>';
-    btn.textContent = 'Analyze';
-    btn.disabled = false;
-    return;
-  }
+    if (reviews.length === 0) {
+      resultsEl.innerHTML = '<div class="ts-error">No reviews found. Make sure you can see reviews on this page, then try again.</div>';
+      btn.textContent = 'Analyze';
+      btn.disabled = false;
+      return;
+    }
 
-  var prompt = tsBuildPrompt(tsRestaurant, reviews, tsWeights);
+    var prompt = tsBuildPrompt(tsRestaurant, reviews, tsWeights);
 
-  chrome.runtime.sendMessage({ type: 'ANALYZE', prompt: prompt }, function(response) {
-    btn.textContent = 'Analyze';
-    btn.disabled = false;
+    chrome.runtime.sendMessage({ type: 'ANALYZE', prompt: prompt }, function(response) {
+      btn.textContent = 'Analyze';
+      btn.disabled = false;
 
-    if (!response || !response.success) {
-      resultsEl.innerHTML = '<div class="ts-error">Analysis failed. Check your connection and try again.</div>';
+      if (!response || !response.success) {
+        resultsEl.innerHTML = '<div class="ts-error">Analysis failed. Check your connection and try again.</div>';
       return;
     }
 
     try {
+      console.log('[TrueStar] raw response:', JSON.stringify(response));
       var blocks = response.data.content;
       var textBlock = null;
       for (var i = 0; i < blocks.length; i++) {
         if (blocks[i].type === 'text') { textBlock = blocks[i].text; break; }
       }
-      var cleaned = textBlock.replace(/```json/g, '').replace(/```/g, '').trim();
-      var parsed = JSON.parse(cleaned);
+      console.log('[TrueStar] raw text block:', textBlock);
+      var cleaned = textBlock.replace(/```json/gi, '').replace(/```/g, '').trim();
+      // Extract just the JSON object — handles any leading/trailing prose from the model
+      var jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) throw new Error('No JSON found in response');
+      var parsed = JSON.parse(jsonMatch[0]);
       tsDisplayResults(parsed, reviews.length);
     } catch (e) {
+      console.error('[TrueStar] parse error:', e);
+      console.error('[TrueStar] full response was:', JSON.stringify(response));
       resultsEl.innerHTML = '<div class="ts-error">Could not parse results. Try again.</div>';
     }
-  });
+    }); // end sendMessage
+  }); // end tsAutoLoadReviews
 }
 
 function tsDisplayResults(data, totalReviews) {
@@ -282,7 +390,7 @@ function tsDisplayResults(data, totalReviews) {
     + '<div class="ts-score-label">TrueStar Score</div>'
     + '</div>'
     + '<div class="ts-headline">' + (data.headline || '') + '</div>'
-    + '<div class="ts-count">' + (data.reviewsCounted || 0) + ' of ' + totalReviews + ' reviews counted</div>'
+    + '<div class="ts-count">' + (data.reviewsCounted || 0) + ' recent reviews analyzed — because yesterday\'s restaurant isn\'t today\'s.</div>'
     + '<div class="ts-bars">' + bars + '</div>';
 
   if (data.whyAdjusted) {
@@ -298,16 +406,23 @@ function tsDisplayResults(data, totalReviews) {
 // ── Init ─────────────────────────────────────────────────────────────────────
 
 function tsInit() {
-  if (!tsIsRestaurantPage()) {
-    var observer = new MutationObserver(function() {
-      if (tsIsRestaurantPage() && !document.getElementById('truestar-fab')) {
-        tsInjectSidebar();
-      }
-    });
-    observer.observe(document.body, { childList: true, subtree: false });
-    return;
+  let lastUrl = window.location.href;
+
+  // Try immediate injection if already on a restaurant page
+  if (tsIsRestaurantPage() && !document.getElementById('truestar-fab')) {
+    tsInjectSidebar();
   }
-  tsInjectSidebar();
+
+  // Poll for URL changes (SPA navigation — Google Maps doesn't fire popstate reliably)
+  setInterval(function() {
+    const currentUrl = window.location.href;
+    if (currentUrl !== lastUrl) {
+      lastUrl = currentUrl;
+      if (tsIsRestaurantPage() && !document.getElementById('truestar-fab')) {
+        setTimeout(tsInjectSidebar, 600); // slight delay to let Maps render the panel
+      }
+    }
+  }, 500);
 }
 
 if (document.readyState === 'loading') {
