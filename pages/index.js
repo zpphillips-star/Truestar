@@ -6,7 +6,7 @@ import WeightSlider from "../components/WeightSlider";
 import CollapsedStep from "../components/CollapsedStep";
 import DiffBadge from "../components/DiffBadge";
 import TopMatchBadge from "../components/TopMatchBadge";
-import { colors, shadow, type as t, radius, spacing } from "../lib/brand";
+import { colors } from "../lib/brand";
 import { CATEGORIES } from "../lib/constants";
 import { buildPrompt } from "../lib/buildPrompt";
 import { useWeights } from "../hooks/useWeights";
@@ -25,6 +25,18 @@ export default function Home() {
   const [showOmitted, setShowOmitted] = useState(false);
   const [showCalc, setShowCalc] = useState(false);
   const [error, setError] = useState(null);
+
+  const TS_TAGLINES = [
+    "Pulling the most recent reviews — because we've all seen an unrecognizable 10-year-old profile picture.",
+    "Reading fresh reviews, not the ones from when this place still had a fax number.",
+    "Skipping the 2014 reviews — the chef has probably changed since then.",
+    "Recent reviews only — because that 5-star from 2011 isn't feeding anyone today.",
+    "Grabbing the latest takes — old reviews are like old Yelp photos: deeply suspicious.",
+    "Loading fresh opinions — the internet never forgets, but we only care about lately.",
+    "Pulling recent reviews — not the ones your uncle wrote after the place 'really found itself.'",
+    "Recent reviews only — restaurants evolve. Some for better. Some for worse. Let's find out.",
+  ];
+  const tagline = TS_TAGLINES[Math.floor((Date.now() / 86400000)) % TS_TAGLINES.length];
 
   const activeWeightSummary = CATEGORIES.filter(c => weights[c.id] > 0).map(c => c.label + " " + weights[c.id] + "%").join(" · ");
 
@@ -186,7 +198,7 @@ export default function Home() {
     : [];
 
   const isResult = stage === "result";
-  const pageBg = isResult ? colors.bgResult : stage === "weights" ? colors.bgWeights : colors.cream;
+  const pageBg = isResult ? "#ede8de" : stage === "weights" ? "#f0ece3" : colors.cream;
 
   return (
     <div style={{ minHeight: "100vh", background: pageBg, display: "flex", flexDirection: "column", alignItems: "center", transition: "background 0.6s ease" }}>
@@ -202,7 +214,7 @@ export default function Home() {
 
       <div style={{ paddingTop: 48, paddingBottom: 6, textAlign: "center" }}>
         <Logo size={32} starColor={colors.amber} textColor={colors.ink} gap={14} />
-        <p style={{ margin: "8px 0 0", fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.textMuted, letterSpacing: t.labelTracking, textTransform: "uppercase", fontWeight: t.light }}>
+        <p style={{ margin: "8px 0 0", fontFamily: "sans-serif", fontSize: 11, color: colors.textMuted, letterSpacing: "0.2em", textTransform: "uppercase", fontWeight: 300 }}>
           Your preferences. Your rating.
         </p>
       </div>
@@ -210,7 +222,7 @@ export default function Home() {
       <div style={{ width: "100%", maxWidth: 540, padding: "24px 18px 60px" }}>
 
         {error && (
-          <div style={{ background: colors.badgePoorBg, border: "1.5px solid " + colors.red, borderRadius: radius.md, padding: "12px 16px", marginBottom: 16, fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.red, animation: "fadeIn 0.3s ease" }}>
+          <div style={{ background: colors.badgePoorBg, border: "1.5px solid " + colors.red, borderRadius: 12, padding: "12px 16px", marginBottom: 16, fontFamily: "sans-serif", fontSize: 14, color: colors.red, animation: "fadeIn 0.3s ease" }}>
             {error}
           </div>
         )}
@@ -221,27 +233,27 @@ export default function Home() {
             onEdit={() => { setStage("search"); setResult(null); setSearchResults([]); setSelected(null); setQuery(""); setLocation(""); }} />
         ) : (
           <div className="step-card" style={{
-            background: colors.white, borderRadius: radius.xl,
-            boxShadow: shadow.card,
+            background: colors.white, borderRadius: 20,
+            boxShadow: "0 2px 16px rgba(56,48,31,0.06)",
             border: "2px solid " + (stage === "search" ? colors.red : colors.border),
             marginBottom: 14,
           }}>
             <div style={{ padding: "18px 22px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                <span style={{ width: 26, height: 26, borderRadius: radius.pill, background: stage === "search" ? colors.red : colors.ink, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: t.sm, fontWeight: t.bold, fontFamily: "'Lato', sans-serif", flexShrink: 0 }}>
+                <span style={{ width: 26, height: 26, borderRadius: "50%", background: stage === "search" ? colors.red : colors.ink, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, fontFamily: "sans-serif", flexShrink: 0 }}>
                   {stage !== "search" ? "✓" : "1"}
                 </span>
-                <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: t.bold, fontSize: t.md, color: colors.ink }}>Find a restaurant</span>
+                <span style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 15, color: colors.ink }}>Find a restaurant</span>
               </div>
               <input value={query} onChange={(e) => setQuery(e.target.value)}
                 placeholder="Restaurant name (e.g. Nobu, Shake Shack)"
-                style={{ width: "100%", padding: "12px 14px", border: "1.5px solid " + colors.border, borderRadius: radius.sm, fontSize: t.base, fontFamily: "'Lato', sans-serif", background: colors.cream, outline: "none", marginBottom: 10 }} />
+                style={{ width: "100%", padding: "12px 14px", border: "1.5px solid " + colors.border, borderRadius: 10, fontSize: 14, fontFamily: "sans-serif", background: colors.cream, outline: "none", marginBottom: 10 }} />
               <input value={location} onChange={(e) => setLocation(e.target.value)}
                 placeholder="City or neighborhood (e.g. Seattle, Brooklyn)"
                 onKeyDown={(e) => e.key === "Enter" && searchRestaurants()}
-                style={{ width: "100%", padding: "12px 14px", border: "1.5px solid " + colors.border, borderRadius: radius.sm, fontSize: t.base, fontFamily: "'Lato', sans-serif", background: colors.cream, outline: "none", marginBottom: 12 }} />
+                style={{ width: "100%", padding: "12px 14px", border: "1.5px solid " + colors.border, borderRadius: 10, fontSize: 14, fontFamily: "sans-serif", background: colors.cream, outline: "none", marginBottom: 12 }} />
               <button onClick={searchRestaurants} disabled={searching || !query || !location}
-                style={{ width: "100%", padding: "13px", background: !query || !location ? "#ddd" : colors.ink, color: "#fff", border: "none", borderRadius: radius.sm, fontFamily: "'Lato', sans-serif", fontSize: t.base, fontWeight: t.bold, cursor: !query || !location ? "not-allowed" : "pointer", transition: "opacity 0.15s" }}>
+                style={{ width: "100%", padding: "13px", background: !query || !location ? "#ddd" : colors.ink, color: "#fff", border: "none", borderRadius: 10, fontFamily: "sans-serif", fontSize: 14, fontWeight: 700, cursor: !query || !location ? "not-allowed" : "pointer", transition: "opacity 0.15s" }}>
                 {searching ? "Searching..." : "Search Restaurants"}
               </button>
             </div>
@@ -255,29 +267,29 @@ export default function Home() {
         ) : (
           (stage === "pick" || stage === "weights") && searchResults.length > 0 && (
             <div className="step-card" style={{
-              background: colors.white, borderRadius: radius.xl,
-              boxShadow: shadow.card,
+              background: colors.white, borderRadius: 20,
+              boxShadow: "0 2px 16px rgba(56,48,31,0.06)",
               border: "2px solid " + (stage === "pick" ? colors.red : colors.border),
               marginBottom: 14, animation: "fadeIn 0.3s ease",
             }}>
               <div style={{ padding: "18px 22px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                  <span style={{ width: 26, height: 26, borderRadius: radius.pill, background: stage === "pick" ? colors.red : colors.ink, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: t.sm, fontWeight: t.bold, fontFamily: "'Lato', sans-serif", flexShrink: 0 }}>
+                  <span style={{ width: 26, height: 26, borderRadius: "50%", background: stage === "pick" ? colors.red : colors.ink, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, fontFamily: "sans-serif", flexShrink: 0 }}>
                     {stage !== "pick" ? "✓" : "2"}
                   </span>
-                  <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: t.bold, fontSize: t.md, color: colors.ink }}>Pick a restaurant</span>
+                  <span style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 15, color: colors.ink }}>Pick a restaurant</span>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                   {searchResults.map((r) => (
                     <div key={r.place_id} onClick={() => pickRestaurant(r)}
-                      style={{ padding: "12px 14px", borderRadius: radius.md, border: "1.5px solid " + (selected?.place_id === r.place_id ? colors.red : colors.border), background: selected?.place_id === r.place_id ? "#fdf5f4" : colors.cream, cursor: "pointer", transition: "all 0.15s" }}>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: t.bold, fontSize: t.base, color: colors.ink }}>{r.name}</div>
+                      style={{ padding: "12px 14px", borderRadius: 12, border: "1.5px solid " + (selected?.place_id === r.place_id ? colors.red : colors.border), background: selected?.place_id === r.place_id ? "#fdf5f4" : colors.cream, cursor: "pointer", transition: "all 0.15s" }}>
+                      <div style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 14, color: colors.ink }}>{r.name}</div>
                       <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
                         <StarRow rating={r.rating || 0} size={13} color={colors.amber} />
-                        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: t.base, fontWeight: t.bold, color: colors.amber }}>{r.rating}</span>
-                        <span style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.textMuted }}>· {r.user_ratings_total?.toLocaleString()} reviews</span>
+                        <span style={{ fontFamily: "sans-serif", fontSize: 13, fontWeight: 700, color: colors.amber }}>{r.rating}</span>
+                        <span style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.textMuted }}>· {r.user_ratings_total?.toLocaleString()} reviews</span>
                       </div>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.textMuted, marginTop: 2 }}>{r.formatted_address}</div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.textMuted, marginTop: 2 }}>{r.formatted_address}</div>
                     </div>
                   ))}
                 </div>
@@ -293,22 +305,22 @@ export default function Home() {
         ) : (
           stage === "weights" && selected && (
             <div className="step-card" style={{
-              background: colors.white, borderRadius: radius.xl,
-              boxShadow: shadow.card,
+              background: colors.white, borderRadius: 20,
+              boxShadow: "0 2px 16px rgba(56,48,31,0.06)",
               border: "2px solid " + colors.red,
               marginBottom: 14, animation: "fadeIn 0.3s ease",
             }}>
               <div style={{ padding: "18px 22px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                  <span style={{ width: 26, height: 26, borderRadius: radius.pill, background: colors.red, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: t.sm, fontWeight: t.bold, fontFamily: "'Lato', sans-serif", flexShrink: 0 }}>3</span>
-                  <span style={{ fontFamily: "'Lato', sans-serif", fontWeight: t.bold, fontSize: t.md, color: colors.ink }}>Set your priorities</span>
+                  <span style={{ width: 26, height: 26, borderRadius: "50%", background: colors.red, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, fontFamily: "sans-serif", flexShrink: 0 }}>3</span>
+                  <span style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 15, color: colors.ink }}>Set your priorities</span>
                   <div
                     className={totalFlash ? "total-flash" : ""}
                     style={{
-                      marginLeft: "auto", padding: "5px 14px", borderRadius: radius.pill,
+                      marginLeft: "auto", padding: "5px 14px", borderRadius: 99,
                       background: total === 100 ? colors.forest : colors.badgePoorBg,
                       border: "1.5px solid " + (total === 100 ? colors.forest : colors.red),
-                      fontFamily: "'Lato', sans-serif", fontWeight: t.bold, fontSize: t.base,
+                      fontFamily: "sans-serif", fontWeight: 700, fontSize: 13,
                       color: total === 100 ? "#fff" : colors.red,
                       transition: "all 0.3s ease",
                       boxShadow: total === 100 ? "0 2px 10px " + colors.forest + "55" : "none",
@@ -322,7 +334,7 @@ export default function Home() {
                   ))}
                 </div>
                 <button onClick={analyze} disabled={total !== 100}
-                  style={{ width: "100%", padding: "14px", background: total !== 100 ? "#ddd" : colors.red, color: "#fff", border: "none", borderRadius: radius.md, fontFamily: "'Lato', sans-serif", fontSize: t.md, fontWeight: t.bold, cursor: total !== 100 ? "not-allowed" : "pointer", letterSpacing: "0.02em", transition: "all 0.2s", boxShadow: total === 100 ? "0 4px 16px " + colors.red + "44" : "none" }}>
+                  style={{ width: "100%", padding: "14px", background: total !== 100 ? "#ddd" : colors.red, color: "#fff", border: "none", borderRadius: 12, fontFamily: "sans-serif", fontSize: 15, fontWeight: 700, cursor: total !== 100 ? "not-allowed" : "pointer", letterSpacing: "0.02em", transition: "all 0.2s", boxShadow: total === 100 ? "0 4px 16px " + colors.red + "44" : "none" }}>
                   {total !== 100 ? "Adjust to 100% (" + total + "% now)" : "Get My TrueStar Rating →"}
                 </button>
               </div>
@@ -332,10 +344,10 @@ export default function Home() {
 
         {/* STEP 4: Result */}
         {stage === "result" && (
-          <div style={{ background: colors.white, borderRadius: radius.xl, boxShadow: shadow.modal, border: "2px solid " + colors.border, overflow: "hidden", animation: "fadeIn 0.4s ease" }}>
+          <div style={{ background: colors.white, borderRadius: 20, boxShadow: "0 4px 32px rgba(56,48,31,0.10)", border: "2px solid " + colors.border, overflow: "hidden", animation: "fadeIn 0.4s ease" }}>
             {loading ? (
               <div style={{ padding: "60px 24px", textAlign: "center" }}>
-                <StarSpinner size={56} color={colors.amber} label="Reading reviews with your priorities in mind…" />
+                <StarSpinner size={56} color={colors.amber} label={tagline} />
               </div>
             ) : result ? (
               <>
@@ -343,93 +355,93 @@ export default function Home() {
                 <div style={{ background: colors.ink, padding: "28px 26px" }}>
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 20 }}>
                     <div>
-                      <h2 style={{ margin: "0 0 3px", fontFamily: "'Lato', sans-serif", fontSize: t.xl, color: "#fff", fontWeight: t.bold }}>{selected?.name}</h2>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: "#666" }}>{selected?.formatted_address}</div>
+                      <h2 style={{ margin: "0 0 3px", fontFamily: "sans-serif", fontSize: 22, color: "#fff", fontWeight: 700 }}>{selected?.name}</h2>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#666" }}>{selected?.formatted_address}</div>
                     </div>
                     <TopMatchBadge score={result.trueScore} />
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center" }}>
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.xs, color: "#666", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Google</div>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.xxl, color: "#888", fontWeight: t.bold, lineHeight: 1 }}>{selected?.rating?.toFixed(1)}</div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 10, color: "#666", textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Google</div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 32, color: "#888", fontWeight: 700, lineHeight: 1 }}>{selected?.rating?.toFixed(1)}</div>
                       <div style={{ marginTop: 5 }}><StarRow rating={selected?.rating || 0} size={13} color="#666" /></div>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: "#555", marginTop: 4 }}>{selected?.user_ratings_total?.toLocaleString()} reviews</div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#555", marginTop: 4 }}>{selected?.user_ratings_total?.toLocaleString()} reviews</div>
                     </div>
                     <div style={{ padding: "0 16px" }}>
                       <DiffBadge diff={diff} />
                     </div>
                     <div style={{ flex: 1, textAlign: "right" }}>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.xs, color: colors.amber, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>TrueStar</div>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: "44px", color: colors.amber, fontWeight: t.bold, lineHeight: 1, textShadow: "0 0 20px " + colors.amber + "66" }}>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 10, color: colors.amber, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>TrueStar</div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 44, color: colors.amber, fontWeight: 700, lineHeight: 1, textShadow: "0 0 20px " + colors.amber + "66" }}>
                         {result.trueScore?.toFixed(1)}
                       </div>
                       <div style={{ marginTop: 5 }}><StarRow rating={result.trueScore || 0} size={15} color={colors.amber} /></div>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: "#666", marginTop: 4 }}>{result.reviewsCounted}/5 reviews — thanks for nothing, Google</div>
+                      <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#666", marginTop: 4 }}>{result.reviewsCounted} recent reviews address your preferences</div>
                     </div>
                   </div>
                 </div>
 
                 {/* Headline */}
                 <div style={{ padding: "20px 24px 16px", borderBottom: "1px solid " + colors.border, background: "#faf7f2" }}>
-                  <p style={{ margin: 0, fontFamily: "'Lato', sans-serif", fontSize: t.md, color: colors.ink, fontStyle: "italic", lineHeight: 1.7 }}>"{result.headline}"</p>
+                  <p style={{ margin: 0, fontFamily: "sans-serif", fontSize: 15, color: colors.ink, fontStyle: "italic", lineHeight: 1.7 }}>"{result.headline}"</p>
                 </div>
 
                 {/* Why it changed */}
                 <div style={{ padding: "16px 24px 0" }}>
-                  <div style={{ padding: "14px 16px", borderRadius: radius.md, background: colors.cream, border: "1.5px solid " + colors.border, marginBottom: 10 }}>
-                    <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, fontWeight: t.bold, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: colors.cream, border: "1.5px solid " + colors.border, marginBottom: 10 }}>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: colors.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
                       Why your score {diff < 0 ? "dropped" : diff > 0 ? "rose" : "stayed the same"}
                     </div>
-                    <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.textSecondary, lineHeight: 1.65 }}>{result.whyAdjusted}</div>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 13, color: colors.textSecondary, lineHeight: 1.65 }}>{result.whyAdjusted}</div>
                   </div>
                 </div>
 
                 {/* Kept / Omitted */}
                 <div style={{ padding: "0 24px" }}>
-                  <div style={{ padding: "14px 16px", borderRadius: radius.md, background: colors.badgeGreatBg, border: "2px solid " + colors.forest, marginBottom: 10 }}>
-                    <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, fontWeight: t.bold, color: colors.forest, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: colors.badgeGreatBg, border: "2px solid " + colors.forest, marginBottom: 10 }}>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: colors.forest, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
                       ✅ {result.reviewsCounted} review{result.reviewsCounted !== 1 ? "s" : ""} counted
                     </div>
-                    <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.ink, lineHeight: 1.65 }}>{result.keptSummary}</div>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 13, color: colors.ink, lineHeight: 1.65 }}>{result.keptSummary}</div>
                   </div>
-                  <div style={{ padding: "14px 16px", borderRadius: radius.md, background: colors.badgePoorBg, border: "2px solid " + colors.red, marginBottom: 16 }}>
-                    <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, fontWeight: t.bold, color: colors.red, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
+                  <div style={{ padding: "14px 16px", borderRadius: 12, background: colors.badgePoorBg, border: "2px solid " + colors.red, marginBottom: 16 }}>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 11, fontWeight: 700, color: colors.red, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 6 }}>
                       🚫 {result.reviewsExcluded} review{result.reviewsExcluded !== 1 ? "s" : ""} omitted
                     </div>
-                    <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.ink, lineHeight: 1.65 }}>{result.omittedSummary}</div>
+                    <div style={{ fontFamily: "sans-serif", fontSize: 13, color: colors.ink, lineHeight: 1.65 }}>{(result.omittedSummary || "").replace(/^\d+\s+reviews?\s+\w+\s*/i, "").replace(/^./, c => c.toUpperCase())}</div>
                   </div>
                 </div>
 
                 {/* Calculation breakdown */}
                 <div style={{ padding: "0 24px 12px" }}>
-                  <button onClick={() => setShowCalc(!showCalc)} style={{ width: "100%", padding: "10px 14px", background: colors.cream, border: "1.5px solid " + colors.border, borderRadius: radius.sm, fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.ink, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
+                  <button onClick={() => setShowCalc(!showCalc)} style={{ width: "100%", padding: "10px 14px", background: colors.cream, border: "1.5px solid " + colors.border, borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: colors.ink, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
                     {showCalc ? "▲" : "▼"} How your TrueStar was calculated
                   </button>
                   {showCalc && (
                     <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                       {calcRows.map((row) => (
-                        <div key={row.id} style={{ padding: "12px 14px", borderRadius: radius.sm, background: colors.white, border: "1.5px solid " + row.color + "44" }}>
+                        <div key={row.id} style={{ padding: "12px 14px", borderRadius: 10, background: colors.white, border: "1.5px solid " + row.color + "44" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                            <div style={{ fontFamily: "'Lato', sans-serif", fontWeight: t.bold, fontSize: t.base, color: row.color }}>{row.label}</div>
-                            <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.textMuted }}>{row.mentions != null ? row.mentions + " mention" + (row.mentions === 1 ? "" : "s") : ""}</div>
+                            <div style={{ fontFamily: "sans-serif", fontWeight: 700, fontSize: 13, color: row.color }}>{row.label}</div>
+                            <div style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.textMuted }}>{row.mentions != null ? row.mentions + " mention" + (row.mentions === 1 ? "" : "s") : ""}</div>
                           </div>
-                          <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.textSecondary }}>
+                          <div style={{ fontFamily: "sans-serif", fontSize: 13, color: colors.textSecondary }}>
                             {row.score.toFixed(1)} × {row.weight}% = <strong style={{ color: row.color }}>{row.contribution.toFixed(2)}</strong>
                           </div>
-                          <div style={{ height: 4, borderRadius: radius.pill, background: colors.tan, marginTop: 8, overflow: "hidden" }}>
-                            <div style={{ height: "100%", width: (row.score / 5 * 100) + "%", background: row.color, borderRadius: radius.pill }} />
+                          <div style={{ height: 4, borderRadius: 99, background: colors.tan, marginTop: 8, overflow: "hidden" }}>
+                            <div style={{ height: "100%", width: (row.score / 5 * 100) + "%", background: row.color, borderRadius: 99 }} />
                           </div>
                         </div>
                       ))}
-                      <div style={{ padding: "14px 16px", borderRadius: radius.sm, background: colors.ink, color: "#fff" }}>
-                        <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.amber, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>TrueStar Score</div>
-                        <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.xxl, fontWeight: t.bold, color: colors.amber }}>
+                      <div style={{ padding: "14px 16px", borderRadius: 10, background: colors.ink, color: "#fff" }}>
+                        <div style={{ fontFamily: "sans-serif", fontSize: 11, color: colors.amber, textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 6 }}>TrueStar Score</div>
+                        <div style={{ fontFamily: "sans-serif", fontSize: 28, fontWeight: 700, color: colors.amber }}>
                           {result.trueScore.toFixed(1)}
                         </div>
                       </div>
                       {missingActiveCategories.length > 0 && (
-                        <div style={{ padding: "10px 12px", borderRadius: radius.sm, background: colors.badgeOkayBg, border: "1px solid " + colors.amber + "88", fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.badgeOkayText, lineHeight: 1.6 }}>
+                        <div style={{ padding: "10px 12px", borderRadius: 10, background: colors.badgeOkayBg, border: "1px solid " + colors.amber + "88", fontFamily: "sans-serif", fontSize: 12, color: colors.badgeOkayText, lineHeight: 1.6 }}>
                           Not enough review evidence for: <strong>{missingActiveCategories.map((c) => c.label).join(", ")}</strong>. These categories were skipped in the calculation.
                         </div>
                       )}
@@ -439,22 +451,22 @@ export default function Home() {
 
                 {/* Kept reviews detail */}
                 <div style={{ padding: "0 24px 12px" }}>
-                  <button onClick={() => setShowKept(!showKept)} style={{ width: "100%", padding: "10px 14px", background: colors.badgeGreatBg, border: "1.5px solid " + colors.forest + "44", borderRadius: radius.sm, fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.forest, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
+                  <button onClick={() => setShowKept(!showKept)} style={{ width: "100%", padding: "10px 14px", background: colors.badgeGreatBg, border: "1.5px solid " + colors.forest + "44", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: colors.forest, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
                     {showKept ? "▲" : "▼"} See {keptReviews.length} counted review{keptReviews.length !== 1 ? "s" : ""}
                   </button>
                   {showKept && (
                     <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                       {keptReviews.map(({ review, index, tag }) => (
-                        <div key={index} style={{ padding: "12px 14px", borderRadius: radius.sm, background: colors.white, border: "1.5px solid " + colors.forest + "33" }}>
+                        <div key={index} style={{ padding: "12px 14px", borderRadius: 10, background: colors.white, border: "1.5px solid " + colors.forest + "33" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
                             <StarRow rating={review.rating || 0} size={12} color={colors.amber} />
-                            <span style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.textMuted }}>{review.author_name}</span>
+                            <span style={{ fontFamily: "sans-serif", fontSize: 11, color: colors.textMuted }}>{review.author_name}</span>
                             {tag.categories?.map((c) => (
-                              <span key={c} style={{ fontFamily: "'Lato', sans-serif", fontSize: t.xs, fontWeight: t.bold, padding: "1px 7px", borderRadius: radius.pill, background: colors.badgeGreatBg, color: colors.forest }}>{c}</span>
+                              <span key={c} style={{ fontFamily: "sans-serif", fontSize: 10, fontWeight: 700, padding: "1px 7px", borderRadius: 99, background: colors.badgeGreatBg, color: colors.forest }}>{c}</span>
                             ))}
                           </div>
-                          <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.ink, lineHeight: 1.6 }}>{review.text}</div>
-                          {tag.reason && <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.textMuted, marginTop: 4, fontStyle: "italic" }}>{tag.reason}</div>}
+                          <div style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.ink, lineHeight: 1.6 }}>{review.text}</div>
+                          {tag.reason && <div style={{ fontFamily: "sans-serif", fontSize: 11, color: colors.textMuted, marginTop: 4, fontStyle: "italic" }}>{tag.reason}</div>}
                         </div>
                       ))}
                     </div>
@@ -464,19 +476,19 @@ export default function Home() {
                 {/* Omitted reviews detail */}
                 {omittedReviews.length > 0 && (
                   <div style={{ padding: "0 24px 24px" }}>
-                    <button onClick={() => setShowOmitted(!showOmitted)} style={{ width: "100%", padding: "10px 14px", background: colors.badgePoorBg, border: "1.5px solid " + colors.red + "44", borderRadius: radius.sm, fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.red, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
+                    <button onClick={() => setShowOmitted(!showOmitted)} style={{ width: "100%", padding: "10px 14px", background: colors.badgePoorBg, border: "1.5px solid " + colors.red + "44", borderRadius: 10, fontFamily: "sans-serif", fontSize: 13, color: colors.red, cursor: "pointer", fontWeight: 600, textAlign: "left" }}>
                       {showOmitted ? "▲" : "▼"} See {omittedReviews.length} omitted review{omittedReviews.length !== 1 ? "s" : ""}
                     </button>
                     {showOmitted && (
                       <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 8 }}>
                         {omittedReviews.map(({ review, index, tag }) => (
-                          <div key={index} style={{ padding: "12px 14px", borderRadius: radius.sm, background: colors.white, border: "1.5px solid " + colors.red + "22", opacity: 0.8 }}>
+                          <div key={index} style={{ padding: "12px 14px", borderRadius: 10, background: colors.white, border: "1.5px solid " + colors.red + "22", opacity: 0.8 }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
                               <StarRow rating={review.rating || 0} size={12} color="#aaa" />
-                              <span style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.textMuted }}>{review.author_name}</span>
+                              <span style={{ fontFamily: "sans-serif", fontSize: 11, color: colors.textMuted }}>{review.author_name}</span>
                             </div>
-                            <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.textMuted, lineHeight: 1.6 }}>{review.text}</div>
-                            {tag.reason && <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: colors.red, marginTop: 4, fontStyle: "italic" }}>{tag.reason}</div>}
+                            <div style={{ fontFamily: "sans-serif", fontSize: 12, color: colors.textMuted, lineHeight: 1.6 }}>{review.text}</div>
+                            {tag.reason && <div style={{ fontFamily: "sans-serif", fontSize: 11, color: colors.red, marginTop: 4, fontStyle: "italic" }}>{tag.reason}</div>}
                           </div>
                         ))}
                       </div>
@@ -486,7 +498,7 @@ export default function Home() {
 
                 {/* Start over */}
                 <div style={{ padding: "0 24px 28px", textAlign: "center" }}>
-                  <button onClick={reset} style={{ padding: "10px 28px", background: "none", border: "1.5px solid " + colors.border, borderRadius: radius.pill, fontFamily: "'Lato', sans-serif", fontSize: t.base, color: colors.textMuted, cursor: "pointer", fontWeight: 600 }}>
+                  <button onClick={reset} style={{ padding: "10px 28px", background: "none", border: "1.5px solid " + colors.border, borderRadius: 99, fontFamily: "sans-serif", fontSize: 13, color: colors.textMuted, cursor: "pointer", fontWeight: 600 }}>
                     Start over
                   </button>
                 </div>
