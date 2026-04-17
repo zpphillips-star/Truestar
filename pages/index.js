@@ -573,5 +573,3 @@ Weight: 600 }}>
     </div>
   );
 }
-
-PS C:\Users\zaphilli\.claw\tmp> 
