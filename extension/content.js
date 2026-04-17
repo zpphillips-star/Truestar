@@ -97,7 +97,8 @@ function tsBuildPrompt(restaurant, reviews, weights) {
     + 'Restaurant: ' + restaurant.name + '\n'
     + 'Official Google Rating: ' + restaurant.rating + ' (' + restaurant.total + ' total reviews, spanning years)\n\n'
     + 'Reviews analyzed (most recent only):\n' + reviewsText + '\n\n'
-    + 'User cares about (weights add to 100%):\n' + weightDesc + '\n\n'
+    + 'User cares ONLY about: ' + weightDesc + '\n'
+    + 'IMPORTANT: The user has set all other categories to 0%. Do NOT mention or discuss any category the user did not weight above 0%. Your entire analysis — headline, whyAdjusted, everything — must stay strictly focused on: ' + weightDesc + '\n\n'
     + 'Category definitions:\n'
     + '- food: taste, flavor, dishes, cooking, ingredients, freshness\n'
     + '- price: cost, value, expensive, cheap, portions, worth it\n'
@@ -105,16 +106,16 @@ function tsBuildPrompt(restaurant, reviews, weights) {
     + '- ambiance: decor, atmosphere, vibe, noise, cleanliness, views\n\n'
     + 'TASK: Analyze the reviews and return ONLY a raw JSON object (no markdown, no backticks, no explanation).\n'
     + 'For each active category: count how many reviews mention it, average their star ratings.\n'
-    + 'TrueStar score = weighted average across active categories.\n'
-    + 'Your headline and whyAdjusted should emphasize what the restaurant is like RIGHT NOW.\n\n'
+    + 'TrueStar score = weighted average across active categories only.\n'
+    + 'headline and whyAdjusted must ONLY discuss the user\'s chosen categories. Never mention food if the user only asked about service, etc.\n\n'
     + '{\n'
-    + '  "categoryScores": {"food": 4.2, "price": 3.8, "service": null, "ambiance": null},\n'
-    + '  "categoryMentions": {"food": 14, "price": 8, "service": 0, "ambiance": 0},\n'
+    + '  "categoryScores": {"food": 4.2, "price": null, "service": null, "ambiance": null},\n'
+    + '  "categoryMentions": {"food": 14, "price": 0, "service": 0, "ambiance": 0},\n'
     + '  "reviewsCounted": 22,\n'
     + '  "reviewsExcluded": 8,\n'
     + '  "trueScore": 4.1,\n'
-    + '  "headline": "One punchy sentence about what the restaurant is like right now",\n'
-    + '  "whyAdjusted": "Why the score differs from Google\'s all-time average",\n'
+    + '  "headline": "One punchy sentence about the restaurant focused only on what the user cares about",\n'
+    + '  "whyAdjusted": "Why the TrueStar score differs from Google\'s average — only discuss the user\'s chosen categories",\n'
     + '  "omittedSummary": "What the excluded reviews focused on"\n'
     + '}';
 }
@@ -368,7 +369,7 @@ function tsRunAnalysis() {
       var jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('No JSON found in response');
       var parsed = JSON.parse(jsonMatch[0]);
-      tsDisplayResults(parsed, reviews.length);
+      tsDisplayResults(parsed, Math.min(reviews.length, 50));
     } catch (e) {
       console.error('[TrueStar] parse error:', e);
       console.error('[TrueStar] full response was:', JSON.stringify(response));
@@ -394,7 +395,7 @@ function tsDisplayResults(data, totalReviews) {
     var pct = (s / 5) * 100;
     var mentions = (data.categoryMentions && data.categoryMentions[c.id]) ? data.categoryMentions[c.id] : 0;
     bars += '<div class="ts-cat-row">'
-      + '<div class="ts-cat-name">' + c.emoji + ' ' + c.label + ' <span class="ts-cat-mentions">' + mentions + 'x</span></div>'
+      + '<div class="ts-cat-name">' + c.emoji + ' ' + c.label + ' <span class="ts-cat-mentions">' + mentions + ' reviews</span></div>'
       + '<div class="ts-bar-wrap"><div class="ts-bar" style="width:' + pct.toFixed(1) + '%"></div></div>'
       + '<div class="ts-cat-score">' + s.toFixed(1) + '</div>'
       + '</div>';
@@ -406,7 +407,7 @@ function tsDisplayResults(data, totalReviews) {
     + '<div class="ts-score-label">TrueStar Score</div>'
     + '</div>'
     + '<div class="ts-headline">' + (data.headline || '') + '</div>'
-    + '<div class="ts-count">Analyzed ' + (totalReviews || 0) + ' recent reviews — ' + (data.reviewsCounted || 0) + ' matched your preferences and were scored.</div>'
+    + '<div class="ts-count">' + (data.reviewsCounted || 0) + ' recent reviews address your preferences.</div>'
     + '<div class="ts-bars">' + bars + '</div>';
 
   if (data.whyAdjusted) {
