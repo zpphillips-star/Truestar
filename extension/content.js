@@ -417,7 +417,7 @@ function tsDisplayResults(data, totalReviews) {
   if (realExcluded > 0) {
     var ignoredText = (data.omittedSummary && !data.omittedSummary.toLowerCase().includes('no review'))
       ? data.omittedSummary
-      : realExcluded + ' reviews didn\'t mention your priority categories and weren\'t scored.';
+      : 'Some reviews didn\'t mention your priority categories and weren\'t scored.';
     html += '<div class="ts-insight ts-muted"><strong>Ignored:</strong> ' + ignoredText + '</div>';
   }
 
