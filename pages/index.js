@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Logo } from "../components/Logo";
 import StarSpinner from "../components/StarSpinner";
 import StarRow from "../components/StarRow";
@@ -365,7 +365,7 @@ export default function Home() {
                         {result.trueScore?.toFixed(1)}
                       </div>
                       <div style={{ marginTop: 5 }}><StarRow rating={result.trueScore || 0} size={15} color={colors.amber} /></div>
-                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: "#666", marginTop: 4 }}>{result.reviewsCounted} reviews counted</div>
+                      <div style={{ fontFamily: "'Lato', sans-serif", fontSize: t.sm, color: "#666", marginTop: 4 }}>{result.reviewsCounted}/5 reviews — thanks for nothing, Google</div>
                     </div>
                   </div>
                 </div>
