@@ -412,6 +412,7 @@ function tsDisplayResults(data, totalReviews) {
     + '<div class="ts-big-score">' + score.toFixed(1) + '</div>'
     + '<div class="ts-stars">' + stars + '</div>'
     + '<div class="ts-score-label">TrueStar Score</div>'
+    + (tsRestaurant.rating ? '<div class="ts-google-compare">vs. Google ' + tsRestaurant.rating + ' ★</div>' : '')
     + '</div>'
     + '<div class="ts-headline">' + (data.headline || '') + '</div>'
     + '<div class="ts-count">' + (data.reviewsCounted || 0) + ' recent reviews address your preferences.</div>'
