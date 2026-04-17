@@ -4,7 +4,10 @@
   "version": "1.0.0",
   "description": "Your preferences. Your rating. Re-rank any restaurant on Google Maps.",
   "permissions": ["storage"],
-  "host_permissions": ["https://www.google.com/maps/*"],
+  "host_permissions": [
+    "https://www.google.com/maps/*",
+    "https://truestar.vercel.app/*"
+  ],
   "background": {
     "service_worker": "background.js"
   },
@@ -16,8 +19,18 @@
       "run_at": "document_idle"
     }
   ],
+  "icons": {
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
   "action": {
     "default_popup": "popup.html",
-    "default_title": "TrueStar"
+    "default_title": "TrueStar",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
   }
 }
