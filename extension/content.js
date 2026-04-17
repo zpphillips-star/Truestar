@@ -116,7 +116,7 @@ function tsBuildPrompt(restaurant, reviews, weights) {
     + '  "trueScore": 4.1,\n'
     + '  "headline": "One punchy sentence about the restaurant focused only on what the user cares about",\n'
     + '  "whyAdjusted": "Why the TrueStar score differs from Google\'s average — only discuss the user\'s chosen categories",\n'
-    + '  "omittedSummary": "What the excluded reviews focused on"\n'
+    + '  "omittedSummary": "What topics the excluded reviews focused on (do NOT include a count or number)"\n'
     + '}';
 }
 
@@ -127,7 +127,7 @@ function tsInjectSidebar() {
 
   var fab = document.createElement('button');
   fab.id = 'truestar-fab';
-  fab.innerHTML = '&#11088;';
+  fab.innerHTML = '<svg width="24" height="22" viewBox="0 0 109.58 100"><path d="M 57.47,0.00 L 54.41,1.53 L 42.91,37.55 L 3.45,44.06 L 0.00,46.74 L 2.30,49.04 L 26.82,56.32 L 36.78,61.30 L 37.16,65.90 L 30.27,95.79 L 31.42,100.00 L 56.32,75.86 L 60.54,76.25 L 73.56,86.59 L 91.19,96.17 L 92.34,92.34 L 79.31,62.84 L 78.93,57.85 L 109.58,35.63 L 108.05,32.95 L 69.73,34.48 Z" fill="#E7A545"/></svg>';
   fab.title = 'TrueStar — Your rating';
   document.body.appendChild(fab);
 
@@ -135,7 +135,7 @@ function tsInjectSidebar() {
   sidebar.id = 'truestar-sidebar';
   sidebar.innerHTML = ''
     + '<div class="ts-header">'
-    + '  <span class="ts-logo">&#11088; TrueStar</span>'
+    + '  <span class="ts-logo"><svg width="20" height="18" viewBox="0 0 109.58 100" style="vertical-align:middle;margin-right:6px"><path d="M 57.47,0.00 L 54.41,1.53 L 42.91,37.55 L 3.45,44.06 L 0.00,46.74 L 2.30,49.04 L 26.82,56.32 L 36.78,61.30 L 37.16,65.90 L 30.27,95.79 L 31.42,100.00 L 56.32,75.86 L 60.54,76.25 L 73.56,86.59 L 91.19,96.17 L 92.34,92.34 L 79.31,62.84 L 78.93,57.85 L 109.58,35.63 L 108.05,32.95 L 69.73,34.48 Z" fill="#E7A545"/></svg>TrueStar</span>'
     + '  <button class="ts-close-btn" id="ts-close">&#10005;</button>'
     + '</div>'
     + '<div class="ts-restaurant-name" id="ts-restaurant-name">Loading...</div>'
@@ -422,9 +422,13 @@ function tsDisplayResults(data, totalReviews) {
   }
   var realExcluded = (totalReviews || 0) - (data.reviewsCounted || 0);
   if (realExcluded > 0) {
-    var ignoredText = (data.omittedSummary && !data.omittedSummary.toLowerCase().includes('no review'))
+    var rawIgnored = (data.omittedSummary && !data.omittedSummary.toLowerCase().includes('no review'))
       ? data.omittedSummary
-      : 'Some reviews didn\'t mention your priority categories and weren\'t scored.';
+      : 'Some reviews focused on topics outside your preferences.';
+    // Strip any leading "N reviews [verb] " pattern Claude might include
+    var ignoredText = rawIgnored
+      .replace(/^\d+\s+reviews?\s+\w+\s*/i, '')
+      .replace(/^./, function(c) { return c.toUpperCase(); });
     html += '<div class="ts-insight ts-muted"><strong>Ignored:</strong> ' + ignoredText + '</div>';
   }
 
