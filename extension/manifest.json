@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "TrueStar",
+  "version": "1.0.0",
+  "description": "Your preferences. Your rating. Re-rank any restaurant on Google Maps.",
+  "permissions": ["storage"],
+  "host_permissions": ["https://www.google.com/maps/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.google.com/maps/*"],
+      "js": ["content.js"],
+      "css": ["sidebar.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "TrueStar"
+  }
+}
