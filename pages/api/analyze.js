@@ -1,10 +1,21 @@
+import { rateLimit, getIp } from "../../lib/rateLimit";
+
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method not allowed" });
   }
 
-  const { prompt } = req.body;
+  // Rate limit: 10 req/min per IP (Anthropic is expensive)
+  const ip = getIp(req);
+  const { allowed, remaining, resetIn } = rateLimit(ip, "analyze", 10);
+  if (!allowed) {
+    res.setHeader("X-RateLimit-Limit", "10");
+    res.setHeader("X-RateLimit-Remaining", "0");
+    res.setHeader("Retry-After", Math.ceil(resetIn / 1000));
+    return res.status(429).json({ error: "Too many requests. Try again in a moment." });
+  }
 
+  const { prompt } = req.body;
   if (!prompt) {
     return res.status(400).json({ error: "Missing prompt" });
   }
@@ -23,11 +34,10 @@ export default async function handler(req, res) {
         messages: [{ role: "user", content: prompt }],
       }),
     });
-
     const data = await response.json();
+    res.setHeader("X-RateLimit-Remaining", remaining);
     res.status(200).json(data);
   } catch (error) {
-    console.error("Failed:", error);
     res.status(500).json({ error: "Analysis failed" });
   }
 }
