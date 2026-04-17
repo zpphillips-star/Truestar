@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Logo } from "../components/Logo";
 import StarSpinner from "../components/StarSpinner";
 import { colors } from "../lib/brand";
@@ -153,7 +153,15 @@ export default function Home() {
   const [searching, setSearching] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [selected, setSelected] = useState(null);
-  const [weights, setWeights] = useState(DEFAULT_WEIGHTS);
+  const [weights, setWeights] = useState(() => {
+    try {
+      const saved = localStorage.getItem("ts_weights");
+      return saved ? JSON.parse(saved) : DEFAULT_WEIGHTS;
+    } catch { return DEFAULT_WEIGHTS; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem("ts_weights", JSON.stringify(weights)); } catch {}
+  }, [weights]);
   const [stage, setStage] = useState("search");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
@@ -236,11 +244,26 @@ export default function Home() {
     setShowCalc(false);
 
     try {
-      const revRes = await fetch(`/api/reviews?placeId=${selected.place_id}`);
-      const revData = await revRes.json();
-      if (!revRes.ok) throw new Error(revData.error || "Failed to fetch reviews");
+      const CACHE_TTL = 30 * 60 * 1000;
+      const cacheKey = "ts_reviews_" + selected.place_id;
+      let reviews;
+      try {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const { data, ts } = JSON.parse(cached);
+          if (Date.now() - ts < CACHE_TTL) { reviews = data; }
+        }
+      } catch {}
 
-      const reviews = revData.result?.reviews || [];
+      if (!reviews) {
+        const revRes = await fetch(`/api/reviews?placeId=${selected.place_id}`);
+        const revData = await revRes.json();
+        if (!revRes.ok) throw new Error(revData.error || "Failed to fetch reviews");
+        reviews = revData.result?.reviews || [];
+        try {
+          localStorage.setItem(cacheKey, JSON.stringify({ data: reviews, ts: Date.now() }));
+        } catch {}
+      }
 
       if (reviews.length === 0) {
         setResult({
@@ -700,3 +723,5 @@ Return ONLY raw JSON (no markdown, no code blocks):
     </div>
   );
 }
+
+
