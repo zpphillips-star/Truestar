@@ -180,6 +180,11 @@
   letter-spacing: 1px;
   font-weight: 700;
 }
+.ts-google-compare {
+  font-size: 12px;
+  color: #b0a898;
+  margin-top: 4px;
+}
 
 .ts-headline {
   font-size: 13px;
