@@ -1,16 +1,16 @@
 // TrueStar — Background Service Worker
-// Handles cross-origin API calls to truestar.vercel.app
+// Handles cross-origin API calls to gettruestar.com
 
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.type === 'ANALYZE') {
-    fetch('https://truestar.vercel.app/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.type === "ANALYZE") {
+    fetch("https://www.gettruestar.com/api/analyze", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ prompt: request.prompt })
     })
-      .then(res => res.json())
-      .then(data => sendResponse({ success: true, data }))
-      .catch(err => sendResponse({ success: false, error: err.message }));
-    return true; // Keep message channel open for async response
+    .then(function(res) { return res.json(); })
+    .then(function(data) { sendResponse({ success: true, data: data }); })
+    .catch(function(err) { sendResponse({ success: false, error: err.message }); });
+    return true;
   }
 });
