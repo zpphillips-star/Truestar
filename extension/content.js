@@ -390,7 +390,7 @@ function tsDisplayResults(data, totalReviews) {
     + '<div class="ts-score-label">TrueStar Score</div>'
     + '</div>'
     + '<div class="ts-headline">' + (data.headline || '') + '</div>'
-    + '<div class="ts-count">' + (data.reviewsCounted || 0) + ' recent reviews analyzed — because yesterday\'s restaurant isn\'t today\'s.</div>'
+    + '<div class="ts-count">Analyzed ' + (totalReviews || 0) + ' recent reviews — ' + (data.reviewsCounted || 0) + ' matched your preferences and were scored.</div>'
     + '<div class="ts-bars">' + bars + '</div>';
 
   if (data.whyAdjusted) {
