@@ -31,6 +31,18 @@ function tsGetRestaurantInfo() {
 
 // ── Review scraping ─────────────────────────────────────────────────────────
 
+// Converts Google's relative date strings to years (approximate)
+function tsParseAgeYears(dateText) {
+  if (!dateText) return 0;
+  var t = dateText.toLowerCase();
+  if (t.includes('hour') || t.includes('minute') || t.includes('second') || t === 'just now') return 0;
+  if (t.includes('day'))   { var n = parseInt(t) || 1; return n / 365; }
+  if (t.includes('week'))  { var n = parseInt(t) || 1; return n / 52; }
+  if (t.includes('month')) { var n = parseInt(t) || 1; return n / 12; }
+  if (t.includes('year'))  { var n = parseInt(t) || 1; return n; }
+  return 0; // unknown format — include it
+}
+
 function tsScrapeReviews() {
   // Expand any collapsed reviews first
   document.querySelectorAll('button.w8nwRe, [jsaction*="pane.review.expandReview"]').forEach(btn => {
@@ -49,11 +61,15 @@ function tsScrapeReviews() {
   document.querySelectorAll('div[data-review-id]').forEach(container => {
     const starEl = container.querySelector('[aria-label*="star"], [aria-label*="Star"], [aria-label*=" stars"]');
     const textEl = container.querySelector('span.wiI7pd, span[class*="review"], .MyEned span');
+    const dateEl = container.querySelector('span.rsqaWe, span[class*="date"], .DU9Pgb span');
     const text = textEl?.innerText?.trim();
     if (!text || text.length < 15 || seen.has(text)) return;
+    // Filter reviews older than 3 years
+    var dateText = dateEl?.innerText?.trim() || '';
+    if (dateText && tsParseAgeYears(dateText) > 3) return;
     seen.add(text);
     const ratingMatch = starEl?.getAttribute('aria-label')?.match(/(\d+(\.\d+)?)/);
-    reviews.push({ rating: ratingMatch ? parseFloat(ratingMatch[1]) : 3, text: text.substring(0, 600) });
+    reviews.push({ rating: ratingMatch ? parseFloat(ratingMatch[1]) : 3, text: text.substring(0, 600), date: dateText });
   });
 
   if (reviews.length === 0) {
@@ -396,8 +412,12 @@ function tsDisplayResults(data, totalReviews) {
   if (data.whyAdjusted) {
     html += '<div class="ts-insight"><strong>Why:</strong> ' + data.whyAdjusted + '</div>';
   }
-  if (data.omittedSummary) {
-    html += '<div class="ts-insight ts-muted"><strong>Ignored:</strong> ' + data.omittedSummary + '</div>';
+  var realExcluded = (totalReviews || 0) - (data.reviewsCounted || 0);
+  if (realExcluded > 0) {
+    var ignoredText = (data.omittedSummary && !data.omittedSummary.toLowerCase().includes('no review'))
+      ? data.omittedSummary
+      : realExcluded + ' reviews didn\'t mention your priority categories and weren\'t scored.';
+    html += '<div class="ts-insight ts-muted"><strong>Ignored:</strong> ' + ignoredText + '</div>';
   }
 
   resultsEl.innerHTML = html;
