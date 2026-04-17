@@ -8,8 +8,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: #E7A545;
-  color: #38301f;
+  background: #38301f;
+  color: #E7A545;
   font-size: 22px;
   border: none;
   cursor: pointer;
@@ -108,6 +108,17 @@
   width: 100%;
   accent-color: #E7A545;
   cursor: pointer;
+  background: transparent;
+}
+.ts-slider::-webkit-slider-runnable-track {
+  background: #E0DDD8;
+  border-radius: 4px;
+  height: 4px;
+}
+.ts-slider::-moz-range-track {
+  background: #E0DDD8;
+  border-radius: 4px;
+  height: 4px;
 }
 
 .ts-analyze-btn {
