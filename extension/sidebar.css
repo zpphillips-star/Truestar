@@ -106,19 +106,32 @@
 }
 .ts-slider {
   width: 100%;
-  accent-color: #E7A545;
+  -webkit-appearance: none;
+  appearance: none;
   cursor: pointer;
-  background: transparent;
-}
-.ts-slider::-webkit-slider-runnable-track {
-  background: #E0DDD8;
-  border-radius: 4px;
   height: 4px;
-}
-.ts-slider::-moz-range-track {
-  background: #E0DDD8;
   border-radius: 4px;
-  height: 4px;
+  outline: none;
+  border: none;
+}
+.ts-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #E7A545;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(56,48,31,0.3);
+}
+.ts-slider::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #E7A545;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 1px 4px rgba(56,48,31,0.3);
 }
 
 .ts-analyze-btn {
