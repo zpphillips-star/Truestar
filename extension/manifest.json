@@ -6,7 +6,8 @@
   "permissions": ["storage"],
   "host_permissions": [
     "https://www.google.com/maps/*",
-    "https://truestar.vercel.app/*"
+    "https://www.gettruestar.com/*",
+    "https://gettruestar.com/*"
   ],
   "background": {
     "service_worker": "background.js"
