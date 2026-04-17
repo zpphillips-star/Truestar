@@ -18,15 +18,13 @@ export default async function handler(req, res) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 1000,
+        model: "claude-haiku-4-5",
+        max_tokens: 4000,
         messages: [{ role: "user", content: prompt }],
       }),
     });
 
     const data = await response.json();
-    console.log("Status:", response.status);
-    console.log("Response:", JSON.stringify(data));
     res.status(200).json(data);
   } catch (error) {
     console.error("Failed:", error);
