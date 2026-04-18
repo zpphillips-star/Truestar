@@ -41,7 +41,7 @@ export default function Home() {
             </svg>
           </div>
           <a
-            href="https://chromewebstore.google.com"
+            href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
             target="_blank"
             rel="noopener noreferrer"
             style={{ background: "#E8563A", color: "#fff", padding: "10px 22px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}
@@ -69,7 +69,7 @@ export default function Home() {
           </p>
 
           <a
-            href="https://chromewebstore.google.com"
+            href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: "inline-block", background: "#E8563A", color: "#fff", padding: "16px 36px", borderRadius: 10, fontWeight: 700, fontSize: 17, textDecoration: "none", boxShadow: "0 4px 20px rgba(230,57,70,0.3)" }}
@@ -140,7 +140,7 @@ export default function Home() {
             TrueStar is free, private, and takes 30 seconds to install.
           </p>
           <a
-            href="https://chromewebstore.google.com"
+            href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: "inline-block", background: "#fff", color: "#E8563A", padding: "16px 40px", borderRadius: 10, fontWeight: 700, fontSize: 17, textDecoration: "none" }}
