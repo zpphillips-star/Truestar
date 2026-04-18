@@ -95,7 +95,7 @@ export default function Home() {
                   { label: "Food Quality", pct: 50, color: "#E8563A" },
                   { label: "Service", pct: 20, color: "#F4A261" },
                   { label: "Price & Value", pct: 20, color: "#2A9D8F" },
-                  { label: "Vibe", pct: 10, color: "#457B9D" },
+                  { label: "Ambiance", pct: 10, color: "#457B9D" },
                 ].map((c) => (
                   <div key={c.label} style={{ textAlign: "left", minWidth: 150 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13, fontWeight: 700 }}>
