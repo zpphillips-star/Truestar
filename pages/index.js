@@ -5,9 +5,9 @@ export default function Home() {
     <>
       <Head>
         <title>TrueStar — Restaurant Ratings Built Around You</title>
-        <meta name="description" content="TrueStar re-ranks Google Maps restaurants based on what YOU care about — food quality, service, value, vibe. Free Chrome extension." />
+        <meta name="description" content="TrueStar re-ranks Google Maps restaurants based on what YOU care about — Food Quality, Price & Value, Service, Ambiance. Free Chrome extension." />
         <meta property="og:title" content="TrueStar — Restaurant Ratings Built Around You" />
-        <meta property="og:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food, service, value, vibe — you decide." />
+        <meta property="og:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food Quality, Price & Value, Service, Ambiance — you decide." />
         <meta property="og:image" content="/icon128.png" />
         <link rel="icon" href="/icon128.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -68,7 +68,7 @@ export default function Home() {
           </h1>
 
           <p style={{ fontSize: 19, color: "#555", lineHeight: 1.6, marginBottom: 36 }}>
-            {"Google's 4.3★ means nothing if you care about vibe and they counted the parking reviews. TrueStar re-ranks any restaurant on Google Maps based on what "}
+            {"Google's 4.3★ means nothing if you care about ambiance and they counted the parking reviews. TrueStar re-ranks any restaurant on Google Maps based on what "}
             <em>you</em>
             {" actually care about."}
           </p>
@@ -94,7 +94,7 @@ export default function Home() {
                 {[
                   { label: "Food Quality", pct: 50, color: "#E8563A" },
                   { label: "Service", pct: 20, color: "#F4A261" },
-                  { label: "Value", pct: 20, color: "#2A9D8F" },
+                  { label: "Price & Value", pct: 20, color: "#2A9D8F" },
                   { label: "Vibe", pct: 10, color: "#457B9D" },
                 ].map((c) => (
                   <div key={c.label} style={{ textAlign: "left", minWidth: 150 }}>
@@ -124,7 +124,7 @@ export default function Home() {
           <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
             {[
               { n: "1", title: "Open Google Maps", body: "Browse restaurants like normal. TrueStar quietly activates on any Google Maps page." },
-              { n: "2", title: "Set your priorities", body: "Dial in what matters to you — food, service, value, vibe. Weights must add up to 100%." },
+              { n: "2", title: "Set your priorities", body: "Dial in what matters to you — Food Quality, Price & Value, Service, Ambiance. Weights must add up to 100%." },
               { n: "3", title: "Get your real score", body: "AI reads the freshest reviews and scores the restaurant your way. In seconds." },
             ].map((s) => (
               <div key={s.n} style={{ flex: "1 1 220px", maxWidth: 260, textAlign: "left" }}>
