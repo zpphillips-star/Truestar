@@ -20,6 +20,11 @@ export default function Home() {
         body { font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif; background: #F4EFE6; color: #2D2D2D; }
         a { cursor: pointer; }
         a:hover { opacity: 0.88; }
+        @media (max-width: 600px) {
+          nav { padding: 14px 16px !important; }
+          nav svg { width: 130px !important; height: auto !important; }
+          nav a { font-size: 12px !important; padding: 8px 14px !important; }
+        }
       `}</style>
 
       <main>
