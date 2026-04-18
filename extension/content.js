@@ -19,12 +19,26 @@ function tsIsRestaurantPage() {
 }
 
 function tsGetRestaurantInfo() {
-  const nameEl = document.querySelector('h1.DUwDvf, h1[class*="fontHeadlineLarge"]');
-  const ratingEl = document.querySelector('div.F7nice > span > span[aria-hidden]');
+  // h1 selectors — Maps paints these slowly
+  const nameEl = document.querySelector('h1.DUwDvf, h1[class*="fontHeadlineLarge"], h1[class*="tAiQdd"]');
+  // Page title is faster: "Restaurant Name - Google Maps"
+  const titleName = document.title.replace(/\s*[-–—]\s*Google Maps.*$/i, '').trim();
+  const name = nameEl?.textContent?.trim() || (titleName && titleName !== 'Google Maps' ? titleName : null);
+  // Rating — try multiple selectors
+  const ratingEl = document.querySelector(
+    'div.F7nice > span > span[aria-hidden], ' +
+    'span.ceNzKf[aria-label], ' +
+    'div[jsaction*="pane.rating"] span[aria-hidden]'
+  );
+  // Also try pulling from the aria-label on the review count button: "4.7 stars 1,234 reviews"
+  const reviewBtn = document.querySelector('button[jsaction*="review"], [data-item-id*="rating"]');
+  const ariaRating = reviewBtn?.getAttribute('aria-label')?.match(/^([\d.]+)\s*star/i)?.[1];
+  const rating = ratingEl?.textContent?.trim() || ariaRating || null;
+
   const totalEl = document.querySelector('div.F7nice > span:last-child > span[aria-label]');
   return {
-    name: nameEl?.textContent?.trim() || 'This Restaurant',
-    rating: ratingEl?.textContent?.trim() || '?',
+    name: name || null,
+    rating: rating || '?',
     total: totalEl?.getAttribute('aria-label')?.match(/[\d,]+/)?.[0]?.replace(',', '') || '?'
   };
 }
@@ -95,7 +109,6 @@ function tsBuildPrompt(restaurant, reviews, weights) {
 
   return 'You are TrueStar, a restaurant rating analyzer focused on recent experience.\n\n'
     + 'Restaurant: ' + restaurant.name + '\n'
-    + 'Official Google Rating: ' + restaurant.rating + ' (' + restaurant.total + ' total reviews, spanning years)\n\n'
     + 'Reviews analyzed (most recent only):\n' + reviewsText + '\n\n'
     + 'User cares ONLY about: ' + weightDesc + '\n'
     + 'IMPORTANT: The user has set all other categories to 0%. Do NOT mention or discuss any category the user did not weight above 0%. Your entire analysis — headline, whyAdjusted, everything — must stay strictly focused on: ' + weightDesc + '\n\n'
@@ -107,7 +120,8 @@ function tsBuildPrompt(restaurant, reviews, weights) {
     + 'TASK: Analyze the reviews and return ONLY a raw JSON object (no markdown, no backticks, no explanation).\n'
     + 'For each active category: count how many reviews mention it, average their star ratings.\n'
     + 'TrueStar score = weighted average across active categories only.\n'
-    + 'headline and whyAdjusted must ONLY discuss the user\'s chosen categories. Never mention food if the user only asked about service, etc.\n\n'
+    + 'headline: one punchy sentence about the restaurant, focused only on the user\'s chosen categories.\n'
+    + 'whyAdjusted: explain what the recent reviews say about the user\'s chosen categories. Do NOT mention Google, do NOT compare to any other rating. Only discuss what you found in these reviews.\n\n'
     + '{\n'
     + '  "categoryScores": {"food": 4.2, "price": null, "service": null, "ambiance": null},\n'
     + '  "categoryMentions": {"food": 14, "price": 0, "service": 0, "ambiance": 0},\n'
@@ -115,7 +129,7 @@ function tsBuildPrompt(restaurant, reviews, weights) {
     + '  "reviewsExcluded": 8,\n'
     + '  "trueScore": 4.1,\n'
     + '  "headline": "One punchy sentence about the restaurant focused only on what the user cares about",\n'
-    + '  "whyAdjusted": "Why the TrueStar score differs from Google\'s average — only discuss the user\'s chosen categories",\n'
+    + '  "whyAdjusted": "What the recent reviews say about the user\'s chosen categories — no Google comparison",\n'
     + '  "omittedSummary": "What topics the excluded reviews focused on (do NOT include a count or number)"\n'
     + '}';
 }
@@ -354,6 +368,14 @@ function tsRunAnalysis() {
 
     var prompt = tsBuildPrompt(tsRestaurant, reviews, tsWeights);
 
+    // Guard: chrome.runtime can become undefined if extension is reloaded while tab is open
+    if (!chrome.runtime) {
+      resultsEl.innerHTML = '<div class="ts-error">Extension was reloaded — please refresh this tab and try again.</div>';
+      btn.textContent = 'Analyze';
+      btn.disabled = false;
+      return;
+    }
+
     chrome.runtime.sendMessage({ type: 'ANALYZE', prompt: prompt }, function(response) {
       btn.textContent = 'Analyze';
       btn.disabled = false;
@@ -365,6 +387,18 @@ function tsRunAnalysis() {
 
     try {
       console.log('[TrueStar] raw response:', JSON.stringify(response));
+
+      // Check for API-level errors (rate limit, server error, etc.)
+      if (response.data && response.data.error) {
+        var apiErr = response.data.error.toLowerCase();
+        if (apiErr.includes('too many') || apiErr.includes('rate')) {
+          resultsEl.innerHTML = '<div class="ts-error">Too many requests — wait a moment and try again.</div>';
+        } else {
+          resultsEl.innerHTML = '<div class="ts-error">API error: ' + response.data.error + '</div>';
+        }
+        return;
+      }
+
       var blocks = response.data.content;
       var textBlock = null;
       for (var i = 0; i < blocks.length; i++) {
@@ -372,7 +406,6 @@ function tsRunAnalysis() {
       }
       console.log('[TrueStar] raw text block:', textBlock);
       var cleaned = textBlock.replace(/```json/gi, '').replace(/```/g, '').trim();
-      // Extract just the JSON object — handles any leading/trailing prose from the model
       var jsonMatch = cleaned.match(/\{[\s\S]*\}/);
       if (!jsonMatch) throw new Error('No JSON found in response');
       var parsed = JSON.parse(jsonMatch[0]);
@@ -412,7 +445,7 @@ function tsDisplayResults(data, totalReviews) {
     + '<div class="ts-big-score">' + score.toFixed(1) + '</div>'
     + '<div class="ts-stars">' + stars + '</div>'
     + '<div class="ts-score-label">TrueStar Score</div>'
-    + (tsRestaurant.rating ? '<div class="ts-google-compare">vs. Google ' + tsRestaurant.rating + ' ★</div>' : '')
+    + (tsRestaurant.rating && tsRestaurant.rating !== '?' ? '<div class="ts-google-compare">vs. Google ' + tsRestaurant.rating + ' ★</div>' : '')
     + '</div>'
     + '<div class="ts-headline">' + (data.headline || '') + '</div>'
     + '<div class="ts-count">' + (data.reviewsCounted || 0) + ' recent reviews address your preferences.</div>'
@@ -421,13 +454,9 @@ function tsDisplayResults(data, totalReviews) {
   if (data.whyAdjusted) {
     html += '<div class="ts-insight"><strong>Why:</strong> ' + data.whyAdjusted + '</div>';
   }
-  var realExcluded = (totalReviews || 0) - (data.reviewsCounted || 0);
-  if (realExcluded > 0) {
-    var rawIgnored = (data.omittedSummary && !data.omittedSummary.toLowerCase().includes('no review'))
-      ? data.omittedSummary
-      : 'Some reviews focused on topics outside your preferences.';
+  if (data.omittedSummary && !data.omittedSummary.toLowerCase().includes('no review')) {
     // Strip any leading "N reviews [verb] " pattern Claude might include
-    var ignoredText = rawIgnored
+    var ignoredText = data.omittedSummary
       .replace(/^\d+\s+reviews?\s+\w+\s*/i, '')
       .replace(/^./, function(c) { return c.toUpperCase(); });
     html += '<div class="ts-insight ts-muted"><strong>Ignored:</strong> ' + ignoredText + '</div>';
@@ -438,21 +467,53 @@ function tsDisplayResults(data, totalReviews) {
 
 // ── Init ─────────────────────────────────────────────────────────────────────
 
+function tsRefreshForNewPlace() {
+  // Retry until both name AND rating are found (up to 15x, 300ms gaps)
+  var attempts = 0;
+  var nameTimer = setInterval(function() {
+    var info = tsGetRestaurantInfo();
+    attempts++;
+    var gotName = info.name;
+    var gotRating = info.rating && info.rating !== '?';
+    if ((gotName && gotRating) || attempts >= 15) {
+      clearInterval(nameTimer);
+      tsRestaurant = {
+        name: info.name || document.title.replace(/\s*[-–—]\s*Google Maps.*$/i, '').trim() || 'Unknown Restaurant',
+        rating: gotRating ? info.rating : tsRestaurant.rating,
+        total: info.total
+      };
+      var nameEl = document.getElementById('ts-restaurant-name');
+      if (nameEl) nameEl.textContent = tsRestaurant.name;
+    }
+  }, 300);
+
+  // Clear old results only on new location — not on sidebar open/close
+  var resultsEl = document.getElementById('ts-results');
+  if (resultsEl) resultsEl.innerHTML = '';
+  var btn = document.getElementById('ts-analyze');
+  if (btn) { btn.textContent = 'Analyze'; btn.disabled = false; }
+}
+
 function tsInit() {
   let lastUrl = window.location.href;
 
-  // Try immediate injection if already on a restaurant page
+  // Inject immediately if already on a restaurant page
   if (tsIsRestaurantPage() && !document.getElementById('truestar-fab')) {
     tsInjectSidebar();
   }
 
-  // Poll for URL changes (SPA navigation — Google Maps doesn't fire popstate reliably)
+  // Poll for URL changes (SPA — Maps doesn't fire popstate reliably)
   setInterval(function() {
-    const currentUrl = window.location.href;
+    var currentUrl = window.location.href;
     if (currentUrl !== lastUrl) {
       lastUrl = currentUrl;
-      if (tsIsRestaurantPage() && !document.getElementById('truestar-fab')) {
-        setTimeout(tsInjectSidebar, 600); // slight delay to let Maps render the panel
+      if (tsIsRestaurantPage()) {
+        if (!document.getElementById('truestar-fab')) {
+          setTimeout(tsInjectSidebar, 600);
+        } else {
+          // Sidebar already exists — just refresh for the new place
+          setTimeout(tsRefreshForNewPlace, 600);
+        }
       }
     }
   }, 500);
