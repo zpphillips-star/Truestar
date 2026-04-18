@@ -44,7 +44,7 @@ export default function Home() {
             href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ background: "#E8563A", color: "#fff", padding: "10px 22px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}
+            style={{ background: "#E8563A", color: "#fff", padding: "10px 22px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none", whiteSpace: "nowrap" }}
           >
             Add to Chrome — Free
           </a>
