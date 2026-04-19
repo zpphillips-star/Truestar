@@ -5,9 +5,9 @@ export default function Home() {
     <>
       <Head>
         <title>TrueStar — Restaurant Ratings Built Around You</title>
-        <meta name="description" content="TrueStar re-ranks Google Maps restaurants based on what YOU care about — Food Quality, Price & Value, Service, Ambiance. Free Chrome extension." />
+        <meta name="description" content="TrueStar re-ranks Google Maps restaurants based on what YOU care about — food quality, service, value, vibe. Free Chrome extension." />
         <meta property="og:title" content="TrueStar — Restaurant Ratings Built Around You" />
-        <meta property="og:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food Quality, Price & Value, Service, Ambiance — you decide." />
+        <meta property="og:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food, service, value, vibe — you decide." />
         <meta property="og:image" content="/icon128.png" />
         <link rel="icon" href="/icon128.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -20,11 +20,6 @@ export default function Home() {
         body { font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif; background: #F4EFE6; color: #2D2D2D; }
         a { cursor: pointer; }
         a:hover { opacity: 0.88; }
-        @media (max-width: 600px) {
-          nav { padding: 14px 16px !important; }
-          nav svg { width: 130px !important; height: auto !important; }
-          nav a { font-size: 12px !important; padding: 8px 14px !important; }
-        }
       `}</style>
 
       <main>
@@ -46,12 +41,12 @@ export default function Home() {
             </svg>
           </div>
           <a
-            href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
+            href="https://chromewebstore.google.com"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ background: "#E8563A", color: "#fff", padding: "10px 22px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none", whiteSpace: "nowrap" }}
+            style={{ background: "#E8563A", color: "#fff", padding: "10px 22px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}
           >
-            Add to Chrome — Free
+            Add to Your Browser — Free
           </a>
         </nav>
 
@@ -68,18 +63,18 @@ export default function Home() {
           </h1>
 
           <p style={{ fontSize: 19, color: "#555", lineHeight: 1.6, marginBottom: 36 }}>
-            {"Google's 4.3★ means nothing if you care about ambiance and they counted the parking reviews. TrueStar re-ranks any restaurant on Google Maps based on what "}
+            {"Google's 4.3★ means nothing if you care about vibe and they counted the parking reviews. TrueStar re-ranks any restaurant on Google Maps based on what "}
             <em>you</em>
             {" actually care about."}
           </p>
 
           <a
-            href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
+            href="https://chromewebstore.google.com"
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: "inline-block", background: "#E8563A", color: "#fff", padding: "16px 36px", borderRadius: 10, fontWeight: 700, fontSize: 17, textDecoration: "none", boxShadow: "0 4px 20px rgba(230,57,70,0.3)" }}
           >
-            Add to Chrome — It&#39;s Free
+            Add to Your Browser — It&#39;s Free
           </a>
 
           <p style={{ marginTop: 14, fontSize: 13, color: "#999" }}>Works on Chrome, Edge, Brave &amp; Opera · No account needed</p>
@@ -94,8 +89,8 @@ export default function Home() {
                 {[
                   { label: "Food Quality", pct: 50, color: "#E8563A" },
                   { label: "Service", pct: 20, color: "#F4A261" },
-                  { label: "Price & Value", pct: 20, color: "#2A9D8F" },
-                  { label: "Ambiance", pct: 10, color: "#457B9D" },
+                  { label: "Value", pct: 20, color: "#2A9D8F" },
+                  { label: "Vibe", pct: 10, color: "#457B9D" },
                 ].map((c) => (
                   <div key={c.label} style={{ textAlign: "left", minWidth: 150 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6, fontSize: 13, fontWeight: 700 }}>
@@ -124,7 +119,7 @@ export default function Home() {
           <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
             {[
               { n: "1", title: "Open Google Maps", body: "Browse restaurants like normal. TrueStar quietly activates on any Google Maps page." },
-              { n: "2", title: "Set your priorities", body: "Dial in what matters to you — Food Quality, Price & Value, Service, Ambiance. Weights must add up to 100%." },
+              { n: "2", title: "Set your priorities", body: "Dial in what matters to you — food, service, value, vibe. Weights must add up to 100%." },
               { n: "3", title: "Get your real score", body: "AI reads the freshest reviews and scores the restaurant your way. In seconds." },
             ].map((s) => (
               <div key={s.n} style={{ flex: "1 1 220px", maxWidth: 260, textAlign: "left" }}>
@@ -145,12 +140,12 @@ export default function Home() {
             TrueStar is free, private, and takes 30 seconds to install.
           </p>
           <a
-            href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
+            href="https://chromewebstore.google.com"
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: "inline-block", background: "#fff", color: "#E8563A", padding: "16px 40px", borderRadius: 10, fontWeight: 700, fontSize: 17, textDecoration: "none" }}
           >
-            Add to Chrome — Free
+            Add to Your Browser — Free
           </a>
         </section>
 
