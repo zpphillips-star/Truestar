@@ -59,7 +59,7 @@ export default function Home() {
         <section style={{ textAlign: "center", padding: "80px 24px 60px", maxWidth: 680, margin: "0 auto" }}>
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #E5DDD0", borderRadius: 20, padding: "6px 16px", marginBottom: 28, fontSize: 13, color: "#666" }}>
             <span>🌟</span>
-            <span>Free Chrome Extension</span>
+            <span>Free Browser Extension</span>
           </div>
 
           <h1 style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, marginBottom: 20, letterSpacing: -1 }}>
