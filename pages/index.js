@@ -6,9 +6,40 @@ export default function Home() {
       <Head>
         <title>TrueStar — Restaurant Ratings Built Around You</title>
         <meta name="description" content="TrueStar re-ranks Google Maps restaurants based on what YOU care about — food quality, service, value, vibe. Free Chrome extension." />
+        <meta name="keywords" content="google maps ratings, restaurant finder, chrome extension, food ratings, personalized restaurant scores" />
+        <link rel="canonical" href="https://gettruestar.com" />
+
+        {/* Open Graph */}
         <meta property="og:title" content="TrueStar — Restaurant Ratings Built Around You" />
         <meta property="og:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food, service, value, vibe — you decide." />
         <meta property="og:image" content="/icon128.png" />
+        <meta property="og:url" content="https://gettruestar.com" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="TrueStar" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="TrueStar — Restaurant Ratings Built Around You" />
+        <meta name="twitter:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food, service, value, vibe — you decide." />
+
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "TrueStar",
+              "applicationCategory": "BrowserApplication",
+              "operatingSystem": "Chrome, Edge, Brave, Opera",
+              "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+              "description": "TrueStar re-ranks Google Maps restaurants based on what you actually care about — food quality, service, value, or vibe. Free Chrome extension.",
+              "url": "https://gettruestar.com",
+              "downloadUrl": "https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
+            })
+          }}
+        />
+
         <link rel="icon" href="/icon128.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
@@ -62,9 +93,14 @@ export default function Home() {
 
         {/* Hero */}
         <section style={{ textAlign: "center", padding: "80px 24px 60px", maxWidth: 680, margin: "0 auto" }}>
-          <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #E5DDD0", borderRadius: 20, padding: "6px 16px", marginBottom: 28, fontSize: 13, color: "#666" }}>
-            <span>🌟</span>
-            <span>Free Browser Extension</span>
+          <div style={{ display: "inline-flex", gap: 10, flexWrap: "wrap", justifyContent: "center", marginBottom: 28 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #E5DDD0", borderRadius: 20, padding: "6px 16px", fontSize: 13, color: "#666" }}>
+              <span>🌟</span>
+              <span>Free Browser Extension</span>
+            </div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff", border: "1px solid #E5DDD0", borderRadius: 20, padding: "6px 16px", fontSize: 13, color: "#666" }}>
+              <span>⭐ Rated 5.0 on Chrome Web Store</span>
+            </div>
           </div>
 
           <h1 style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, marginBottom: 20, letterSpacing: -1 }}>
@@ -138,6 +174,48 @@ export default function Home() {
                 </div>
                 <h3 style={{ fontWeight: 700, fontSize: 17, marginBottom: 8 }}>{s.title}</h3>
                 <p style={{ color: "#666", fontSize: 15, lineHeight: 1.6 }}>{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section style={{ background: "#F4EFE6", padding: "72px 24px", maxWidth: 720, margin: "0 auto" }}>
+          <h2 style={{ fontSize: 34, fontWeight: 900, marginBottom: 12, textAlign: "center" }}>Frequently asked questions</h2>
+          <p style={{ color: "#888", marginBottom: 48, fontSize: 16, textAlign: "center" }}>Everything you wanted to know.</p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+            {[
+              {
+                q: "Is TrueStar free?",
+                a: "Yes, completely free. No account, no subscription, no hidden fees — ever."
+              },
+              {
+                q: "How is TrueStar different from Google's star rating?",
+                a: "Google averages all reviews equally. TrueStar uses AI to analyze recent reviews and weights each category (food, service, value, vibe) based on YOUR preferences — so the score actually reflects what you care about."
+              },
+              {
+                q: "Does TrueStar collect my data?",
+                a: "No. Your weights stay in your browser. We never see your Google Maps activity, your location, or any of your personal data."
+              },
+              {
+                q: "Which browsers does it work on?",
+                a: "Chrome, Edge, Brave, and Opera — any Chromium-based browser. If you can install Chrome extensions, you're good to go."
+              },
+              {
+                q: "How does the AI scoring work?",
+                a: "TrueStar sends the restaurant name and location to an AI that reads recent reviews and scores food quality, service, price/value, and ambiance separately. Your weights turn those four scores into one personalized TrueStar score."
+              },
+            ].map((item, i, arr) => (
+              <div
+                key={i}
+                style={{
+                  borderTop: "1px solid #E5DDD0",
+                  borderBottom: i === arr.length - 1 ? "1px solid #E5DDD0" : "none",
+                  padding: "24px 0",
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: 16, marginBottom: 10, color: "#2D2D2D" }}>{item.q}</div>
+                <div style={{ color: "#666", fontSize: 15, lineHeight: 1.65 }}>{item.a}</div>
               </div>
             ))}
           </div>
