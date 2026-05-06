@@ -23,6 +23,7 @@ export default function Home() {
         @media (max-width: 600px) {
           nav { padding: 16px 20px !important; }
           .nav-cta { display: none !important; }
+          .nav-links { display: none !important; }
         }
       `}</style>
 
@@ -44,15 +45,19 @@ export default function Home() {
               </g>
             </svg>
           </div>
-          <a
-            href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="nav-cta"
-            style={{ background: "#E8563A", color: "#fff", padding: "10px 22px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}
-          >
-            Add to Your Browser — Free
-          </a>
+          <div style={{ display: "flex", gap: 16, alignItems: "center" }} className="nav-links">
+            <a href="/roadmap" style={{ color: "#6a5a3a", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Roadmap</a>
+            <a href="/submit" style={{ color: "#6a5a3a", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Suggest a Feature</a>
+            <a
+              href="https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="nav-cta"
+              style={{ background: "#E8563A", color: "#fff", padding: "10px 22px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none" }}
+            >
+              Add to Your Browser — Free
+            </a>
+          </div>
         </nav>
 
         {/* Hero */}

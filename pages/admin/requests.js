@@ -125,6 +125,11 @@ function RequestRow({ req, adminKey, onUpdate }) {
         {req.description && (
           <div style={{ fontSize: 12, color: C.ink2, lineHeight: 1.5 }}>{req.description}</div>
         )}
+        {req.image_url && (
+          <a href={req.image_url} target="_blank" rel="noopener noreferrer" style={{ display: "inline-block", marginTop: 6 }}>
+            <img src={req.image_url} alt="attachment" style={{ maxWidth: 120, maxHeight: 80, borderRadius: 6, border: `1px solid ${C.border}`, display: "block" }} />
+          </a>
+        )}
         <div style={{ fontSize: 10, color: C.muted, marginTop: 6 }}>
           {new Date(req.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
         </div>

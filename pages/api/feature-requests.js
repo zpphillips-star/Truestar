@@ -34,7 +34,7 @@ export default async function handler(req, res) {
 
   // ── POST: submit new request ────────────────────────────────────────────
   if (req.method === "POST") {
-    const { title, description } = req.body || {};
+    const { title, description, image_url } = req.body || {};
     if (!title || title.trim().length < 3) {
       return res.status(400).json({ error: "Title must be at least 3 characters." });
     }
@@ -47,6 +47,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           title: title.trim().slice(0, 120),
           description: description ? description.trim().slice(0, 1000) : null,
+          image_url: image_url || null,
         }),
       },
       true // service key for writes
