@@ -8,9 +8,27 @@ const TS_CATEGORIES = [
   { id: 'ambiance', label: 'Ambiance',      emoji: '✨', desc: 'Decor, atmosphere, vibe' },
 ];
 
-let tsWeights = { food: 40, price: 20, service: 25, ambiance: 15 };
+const TS_DEFAULT_WEIGHTS = { food: 40, price: 20, service: 25, ambiance: 15 };
+let tsWeights = { ...TS_DEFAULT_WEIGHTS };
 let tsSidebarOpen = false;
 let tsRestaurant = null;
+
+// ── Persist weights to chrome.storage.sync ──────────────────────────────────
+
+function tsSaveWeights() {
+  try { chrome.storage.sync.set({ tsWeights }); } catch (e) {}
+}
+
+function tsLoadWeights(callback) {
+  try {
+    chrome.storage.sync.get({ tsWeights: TS_DEFAULT_WEIGHTS }, function(result) {
+      tsWeights = result.tsWeights;
+      callback();
+    });
+  } catch (e) {
+    callback(); // fall back to defaults if storage unavailable
+  }
+}
 
 // ── Detect restaurant page ──────────────────────────────────────────────────
 
@@ -200,6 +218,7 @@ function tsRenderSliders() {
       tsWeights[cat.id] = parseInt(e.target.value);
       tsNormalize(cat.id);
       tsUpdateSliders();
+      tsSaveWeights();
     });
     tsUpdateSliderTrack(slider);
   });
@@ -497,26 +516,29 @@ function tsRefreshForNewPlace() {
 function tsInit() {
   let lastUrl = window.location.href;
 
-  // Inject immediately if already on a restaurant page
-  if (tsIsRestaurantPage() && !document.getElementById('truestar-fab')) {
-    tsInjectSidebar();
-  }
+  // Load persisted weights first, then start observing
+  tsLoadWeights(function() {
+    // Inject immediately if already on a restaurant page
+    if (tsIsRestaurantPage() && !document.getElementById('truestar-fab')) {
+      tsInjectSidebar();
+    }
 
-  // Poll for URL changes (SPA — Maps doesn't fire popstate reliably)
-  setInterval(function() {
-    var currentUrl = window.location.href;
-    if (currentUrl !== lastUrl) {
-      lastUrl = currentUrl;
-      if (tsIsRestaurantPage()) {
-        if (!document.getElementById('truestar-fab')) {
-          setTimeout(tsInjectSidebar, 600);
-        } else {
-          // Sidebar already exists — just refresh for the new place
-          setTimeout(tsRefreshForNewPlace, 600);
+    // Poll for URL changes (SPA — Maps doesn't fire popstate reliably)
+    setInterval(function() {
+      var currentUrl = window.location.href;
+      if (currentUrl !== lastUrl) {
+        lastUrl = currentUrl;
+        if (tsIsRestaurantPage()) {
+          if (!document.getElementById('truestar-fab')) {
+            setTimeout(tsInjectSidebar, 600);
+          } else {
+            // Sidebar already exists — just refresh for the new place
+            setTimeout(tsRefreshForNewPlace, 600);
+          }
         }
       }
-    }
-  }, 500);
+    }, 500);
+  });
 }
 
 if (document.readyState === 'loading') {
