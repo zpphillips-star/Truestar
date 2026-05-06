@@ -20,42 +20,46 @@ const COLUMNS = [
   {
     key: "pending",
     label: "Requested",
-    emoji: "��",
+    icon: "↑",
+    accentColor: "#b09070",
     color: "#6a5a3a",
-    bg: "#f0ece3",
-    headerBg: "#e8e2d6",
-    description: "Community ideas",
+    cardBg: "#fdfaf5",
+    colBg: "#f5f0e8",
+    description: "Community ideas, sorted by votes",
   },
   {
     key: "approved",
     label: "Up Next",
-    emoji: "✅",
+    icon: "→",
+    accentColor: "#E7A545",
     color: "#9a6010",
-    bg: "#fef3df",
-    headerBg: "#fde8b8",
-    description: "Planned for soon",
+    cardBg: "#fffdf7",
+    colBg: "#fef9ed",
+    description: "Confirmed and planned",
   },
   {
     key: "building",
-    label: "Building",
-    emoji: "🔨",
+    label: "In Progress",
+    icon: "⚙",
+    accentColor: "#3a9fd4",
     color: "#1a6fa8",
-    bg: "#e0f0ff",
-    headerBg: "#b8dcf8",
-    description: "In active development",
+    cardBg: "#f7fbff",
+    colBg: "#edf6ff",
+    description: "Actively being built",
   },
   {
     key: "shipped",
     label: "Shipped",
-    emoji: "🚀",
-    color: "#189E01",
-    bg: "#e8f5e0",
-    headerBg: "#c4e8b8",
+    icon: "✓",
+    accentColor: "#189E01",
+    color: "#0f7a00",
+    cardBg: "#f7fdf5",
+    colBg: "#edfae8",
     description: "Live in TrueStar",
   },
 ];
 
-function KanbanCard({ req, onVote }) {
+function KanbanCard({ req }) {
   const [votes, setVotes] = useState(req.votes);
   const [voted, setVoted] = useState(false);
   const [voting, setVoting] = useState(false);
@@ -70,7 +74,6 @@ function KanbanCard({ req, onVote }) {
         const data = await res.json();
         setVotes(data.votes);
         setVoted(true);
-        if (onVote) onVote(req.id, data.votes);
       }
     } finally {
       setVoting(false);
@@ -80,50 +83,55 @@ function KanbanCard({ req, onVote }) {
   return (
     <div style={{
       background: C.white,
-      borderRadius: 10,
-      padding: "14px 14px 12px",
+      borderRadius: 8,
+      padding: "12px 14px",
       border: `1px solid ${C.border}`,
-      boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
-      marginBottom: 10,
+      boxShadow: "0 1px 4px rgba(56,48,31,0.06)",
+      marginBottom: 8,
+      transition: "box-shadow 0.15s",
     }}>
-      <p style={{ fontSize: 13, fontWeight: 700, color: C.ink, lineHeight: 1.4, marginBottom: req.description ? 6 : 10 }}>
+      <p style={{ fontSize: 13, fontWeight: 700, color: C.ink, lineHeight: 1.45, marginBottom: 6 }}>
         {req.title}
       </p>
       {req.description && (
-        <p style={{ fontSize: 12, color: C.ink2, lineHeight: 1.45, marginBottom: 10, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+        <p style={{
+          fontSize: 12, color: C.ink2, lineHeight: 1.5, marginBottom: 8,
+          display: "-webkit-box", WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical", overflow: "hidden",
+        }}>
           {req.description}
         </p>
       )}
       {req.image_url && (
         <a href={req.image_url} target="_blank" rel="noopener noreferrer" style={{ display: "block", marginBottom: 8 }}>
-          <img src={req.image_url} alt="" style={{ width: "100%", maxHeight: 100, objectFit: "cover", borderRadius: 6, border: `1px solid ${C.border}` }} />
+          <img src={req.image_url} alt="" style={{ width: "100%", maxHeight: 90, objectFit: "cover", borderRadius: 5, border: `1px solid ${C.border}` }} />
         </a>
       )}
       {req.zap_notes && req.status !== "pending" && (
         <p style={{ fontSize: 11, color: "#1a6fa8", fontStyle: "italic", marginBottom: 8, lineHeight: 1.4 }}>
-          💬 {req.zap_notes}
+          {req.zap_notes}
         </p>
       )}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
         <span style={{ fontSize: 11, color: C.muted }}>
           {new Date(req.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
         </span>
         <button
           onClick={handleVote}
           disabled={voted || voting}
-          title={voted ? "Voted!" : "Upvote"}
+          title={voted ? "Voted!" : "Upvote this idea"}
           style={{
-            display: "flex", alignItems: "center", gap: 4,
-            background: voted ? C.greenBg : "#f5f0e8",
+            display: "flex", alignItems: "center", gap: 5,
+            background: voted ? "#edfae8" : "#f5f0e8",
             border: `1.5px solid ${voted ? C.green : C.border}`,
-            borderRadius: 20, padding: "3px 9px",
+            borderRadius: 20, padding: "3px 10px",
             cursor: voted ? "default" : "pointer",
             fontSize: 12, fontWeight: 700,
             color: voted ? C.green : C.ink2,
             transition: "all 0.15s",
           }}
         >
-          <span>{voted ? "✓" : "▲"}</span>
+          <span style={{ fontSize: 10 }}>{voted ? "✓" : "▲"}</span>
           <span>{votes}</span>
         </button>
       </div>
@@ -131,51 +139,63 @@ function KanbanCard({ req, onVote }) {
   );
 }
 
-function KanbanColumn({ col, cards, onVote }) {
+function KanbanColumn({ col, cards }) {
   return (
-    <div style={{
-      flex: "0 0 260px",
-      display: "flex",
-      flexDirection: "column",
-      minHeight: 400,
-    }}>
-      {/* Column header */}
+    <div style={{ flex: "1 1 0", minWidth: 220, maxWidth: 340, display: "flex", flexDirection: "column" }}>
+      {/* Colored accent bar */}
+      <div style={{ height: 4, borderRadius: "4px 4px 0 0", background: col.accentColor }} />
+
+      {/* Header */}
       <div style={{
-        background: col.headerBg,
-        borderRadius: "10px 10px 0 0",
-        padding: "12px 14px",
-        borderBottom: `2px solid ${col.border || col.bg}`,
+        background: C.white,
+        borderLeft: `1px solid ${C.border}`,
+        borderRight: `1px solid ${C.border}`,
+        padding: "12px 14px 10px",
       }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ fontSize: 16 }}>{col.emoji}</span>
-            <span style={{ fontWeight: 900, fontSize: 14, color: col.color }}>{col.label}</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 3 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+            <span style={{
+              width: 22, height: 22, borderRadius: "50%",
+              background: col.accentColor,
+              color: "#fff", fontSize: 11, fontWeight: 900,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              flexShrink: 0,
+            }}>
+              {col.icon}
+            </span>
+            <span style={{ fontWeight: 900, fontSize: 14, color: C.ink }}>{col.label}</span>
           </div>
           <span style={{
-            background: col.bg, color: col.color,
+            background: "#f0ebe2", color: C.ink2,
             borderRadius: 20, padding: "2px 8px",
-            fontSize: 11, fontWeight: 700,
+            fontSize: 11, fontWeight: 700, minWidth: 22, textAlign: "center",
           }}>
             {cards.length}
           </span>
         </div>
-        <p style={{ fontSize: 11, color: col.color, opacity: 0.75, marginTop: 3 }}>{col.description}</p>
+        <p style={{ fontSize: 11, color: C.muted }}>{col.description}</p>
       </div>
 
-      {/* Cards */}
+      {/* Cards area */}
       <div style={{
         flex: 1,
-        background: col.bg,
-        borderRadius: "0 0 10px 10px",
-        padding: "10px 10px 10px",
-        minHeight: 200,
+        background: col.colBg,
+        border: `1px solid ${C.border}`,
+        borderTop: "none",
+        borderRadius: "0 0 8px 8px",
+        padding: cards.length > 0 ? "10px 10px 6px" : "20px 10px",
+        minHeight: 80,
       }}>
         {cards.length === 0 ? (
-          <div style={{ textAlign: "center", padding: "28px 0", color: col.color, opacity: 0.5, fontSize: 12 }}>
+          <div style={{
+            textAlign: "center", color: C.muted, fontSize: 12,
+            border: `1.5px dashed ${C.border}`, borderRadius: 6,
+            padding: "16px 10px",
+          }}>
             Nothing here yet
           </div>
         ) : (
-          cards.map(r => <KanbanCard key={r.id} req={r} onVote={onVote} />)
+          cards.map(r => <KanbanCard key={r.id} req={r} />)
         )}
       </div>
     </div>
@@ -183,29 +203,14 @@ function KanbanColumn({ col, cards, onVote }) {
 }
 
 export default function Roadmap({ byStatus }) {
-  const [data, setData] = useState(byStatus);
-
-  function handleVote(id, newVotes) {
-    setData(prev => {
-      const next = { ...prev };
-      for (const key of Object.keys(next)) {
-        next[key] = next[key].map(r => r.id === id ? { ...r, votes: newVotes } : r);
-        // Re-sort pending by votes
-        if (key === "pending") {
-          next[key] = [...next[key]].sort((a, b) => b.votes - a.votes);
-        }
-      }
-      return next;
-    });
-  }
-
+  const [data] = useState(byStatus);
   const totalRequests = Object.values(data).reduce((sum, arr) => sum + arr.length, 0);
 
   return (
     <>
       <Head>
         <title>Roadmap — TrueStar</title>
-        <meta name="description" content="See what TrueStar is building, what's been shipped, and vote on the ideas you want most." />
+        <meta name="description" content="See what TrueStar is building, what has shipped, and vote on ideas you want most." />
         <link rel="icon" href="/icon128.png" />
         <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
       </Head>
@@ -215,37 +220,52 @@ export default function Roadmap({ byStatus }) {
         body { font-family: 'Lato', -apple-system, BlinkMacSystemFont, sans-serif; background: ${C.cream}; color: ${C.ink}; }
         button { font-family: inherit; }
         .board-scroll::-webkit-scrollbar { height: 6px; }
-        .board-scroll::-webkit-scrollbar-track { background: ${C.cream}; }
+        .board-scroll::-webkit-scrollbar-track { background: transparent; }
         .board-scroll::-webkit-scrollbar-thumb { background: ${C.border}; border-radius: 3px; }
       `}</style>
 
       {/* Nav */}
-      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "20px 40px", borderBottom: `1px solid ${C.border}`, background: C.cream }}>
+      <nav style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "18px 40px", borderBottom: `1px solid ${C.border}`, background: C.cream }}>
         <Link href="/" style={{ textDecoration: "none" }}>
           <Logo size={22} starColor={C.amber} textColor={C.ink} />
         </Link>
         <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
           <Link href="/roadmap" style={{ color: C.orange, textDecoration: "none", fontSize: 14, fontWeight: 700 }}>Roadmap</Link>
           <Link href="/submit" style={{ background: C.orange, color: "#fff", padding: "8px 18px", borderRadius: 8, fontWeight: 700, fontSize: 13, textDecoration: "none" }}>
-            💡 Suggest a Feature
+            Suggest a Feature
           </Link>
         </div>
       </nav>
 
       {/* Page header */}
-      <div style={{ padding: "36px 40px 24px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 16 }}>
-        <div>
-          <h1 style={{ fontSize: 32, fontWeight: 900, lineHeight: 1.1, marginBottom: 6 }}>What we&apos;re building</h1>
-          <p style={{ color: C.ink2, fontSize: 15 }}>
-            {totalRequests} idea{totalRequests !== 1 ? "s" : ""} submitted · Most-voted get built first · Vote for what matters to you
-          </p>
+      <div style={{ padding: "32px 40px 28px", borderBottom: `1px solid ${C.border}`, background: C.cream }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <h1 style={{ fontSize: 28, fontWeight: 900, lineHeight: 1.15, marginBottom: 6 }}>Product Roadmap</h1>
+            <p style={{ color: C.ink2, fontSize: 14 }}>
+              {totalRequests} idea{totalRequests !== 1 ? "s" : ""} submitted &nbsp;·&nbsp; Most-voted get built first &nbsp;·&nbsp; Vote below
+            </p>
+          </div>
+          {/* Flow indicator */}
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: C.muted, fontWeight: 600 }}>
+            {COLUMNS.map((col, i) => (
+              <span key={col.key} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 4,
+                  background: C.white, border: `1px solid ${C.border}`,
+                  borderRadius: 20, padding: "4px 10px", fontSize: 12,
+                  color: col.color, fontWeight: 700,
+                  borderTop: `2px solid ${col.accentColor}`,
+                }}>
+                  {col.label}
+                </span>
+                {i < COLUMNS.length - 1 && (
+                  <span style={{ color: C.border, fontSize: 14 }}>›</span>
+                )}
+              </span>
+            ))}
+          </div>
         </div>
-        <Link
-          href="/submit"
-          style={{ display: "inline-block", background: C.orange, color: "#fff", padding: "10px 22px", borderRadius: 8, fontWeight: 700, fontSize: 14, textDecoration: "none", whiteSpace: "nowrap" }}
-        >
-          💡 Suggest a Feature
-        </Link>
       </div>
 
       {/* Kanban board */}
@@ -253,8 +273,8 @@ export default function Roadmap({ byStatus }) {
         className="board-scroll"
         style={{
           display: "flex",
-          gap: 16,
-          padding: "0 40px 48px",
+          gap: 12,
+          padding: "28px 40px 48px",
           overflowX: "auto",
           alignItems: "flex-start",
         }}
@@ -264,12 +284,11 @@ export default function Roadmap({ byStatus }) {
             key={col.key}
             col={col}
             cards={data[col.key] || []}
-            onVote={handleVote}
           />
         ))}
       </div>
 
-      <footer style={{ padding: "24px 40px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: C.muted, flexWrap: "wrap", gap: 12 }}>
+      <footer style={{ padding: "24px 40px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: C.muted, flexWrap: "wrap", gap: 12, background: C.cream }}>
         <span>© 2026 TrueStar</span>
         <Link href="/submit" style={{ color: C.muted, textDecoration: "none" }}>Suggest a Feature</Link>
         <Link href="/privacy" style={{ color: C.muted, textDecoration: "none" }}>Privacy Policy</Link>
