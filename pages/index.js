@@ -12,7 +12,9 @@ export default function Home() {
         {/* Open Graph */}
         <meta property="og:title" content="TrueStar — Restaurant Ratings Built Around You" />
         <meta property="og:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food, service, value, vibe — you decide." />
-        <meta property="og:image" content="/icon128.png" />
+        <meta property="og:image" content="https://gettruestar.com/og-image.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content="https://gettruestar.com" />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="TrueStar" />
@@ -147,6 +149,7 @@ export default function Home() {
             </svg>
           </div>
           <div style={{ display: "flex", gap: 16, alignItems: "center" }} className="nav-links">
+            <a href="/use-cases" style={{ color: "#6a5a3a", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Use Cases</a>
             <a href="/blog" style={{ color: "#6a5a3a", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Blog</a>
             <a href="/roadmap" style={{ color: "#6a5a3a", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Roadmap</a>
             <a href="/submit" style={{ color: "#6a5a3a", textDecoration: "none", fontSize: 14, fontWeight: 600 }}>Suggest a Feature</a>
@@ -312,6 +315,7 @@ export default function Home() {
         <footer style={{ padding: "28px 40px", borderTop: "1px solid #E5DDD0", display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 13, color: "#aaa", flexWrap: "wrap", gap: 12, background: "#F4EFE6" }}>
           <span>© 2026 TrueStar</span>
           <span>gettruestar.com</span>
+          <a href="/use-cases" style={{ color: "#aaa", textDecoration: "none" }}>Use Cases</a>
           <a href="/blog" style={{ color: "#aaa", textDecoration: "none" }}>Blog</a>
           <a href="/privacy" style={{ color: "#aaa", textDecoration: "none" }}>Privacy Policy</a>
         </footer>
