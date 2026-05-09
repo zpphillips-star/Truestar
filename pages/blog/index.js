@@ -3,6 +3,33 @@ import Link from "next/link";
 
 const POSTS = [
   {
+    slug: "chrome-extensions-for-foodies",
+    title: "The Best Chrome Extensions for Foodies in 2026",
+    description:
+      "If you love food, the right Chrome extensions can make you a dramatically smarter diner. Here are the top picks for food lovers — starting with the one that changes how you read restaurant reviews.",
+    date: "May 9, 2026",
+    readingTime: "5 min read",
+    tag: "Tools",
+  },
+  {
+    slug: "yelp-vs-google-maps-reviews",
+    title: "Yelp vs Google Maps Reviews: Which Review App Is Most Accurate?",
+    description:
+      "Yelp and Google Maps are the two biggest restaurant review platforms — but they work very differently. Here's an honest comparison of which one to trust, and when.",
+    date: "May 9, 2026",
+    readingTime: "5 min read",
+    tag: "Deep Dive",
+  },
+  {
+    slug: "best-restaurants-near-me-tips",
+    title: "How to Pick a Restaurant You'll Actually Love (Best Restaurants Near Me Tips)",
+    description:
+      "Searching 'best restaurants near me' and still ending up disappointed? Here are practical tips to pick a restaurant that matches your actual preferences — every time.",
+    date: "May 9, 2026",
+    readingTime: "5 min read",
+    tag: "Tips & Tricks",
+  },
+  {
     slug: "how-to-find-good-restaurants-google-maps",
     title: "How to Find Good Restaurants on Google Maps (That You'll Actually Love)",
     description:
