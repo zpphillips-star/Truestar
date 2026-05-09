@@ -41,13 +41,6 @@ export default function Home() {
                 "price": "0",
                 "priceCurrency": "USD"
               },
-              "aggregateRating": {
-                "@type": "AggregateRating",
-                "ratingValue": "5.0",
-                "ratingCount": "12",
-                "bestRating": "5",
-                "worstRating": "1"
-              },
               "description": "TrueStar is a free Chrome extension that re-ranks Google Maps restaurant ratings based on your personal review weights — food quality, service, value, and ambiance. Stop relying on crowd averages; get a personalized restaurant score in seconds.",
               "url": "https://gettruestar.com",
               "downloadUrl": "https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh",
