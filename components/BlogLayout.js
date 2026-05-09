@@ -64,6 +64,37 @@ export default function BlogLayout({ children, meta }) {
           }}
         />
 
+        {/* JSON-LD BreadcrumbList structured data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: SITE_URL,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Blog",
+                  item: `${SITE_URL}/blog`,
+                },
+                {
+                  "@type": "ListItem",
+                  position: 3,
+                  name: title,
+                  item: canonicalUrl,
+                },
+              ],
+            }),
+          }}
+        />
+
         <link rel="icon" href="/icon128.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link
@@ -151,6 +182,26 @@ export default function BlogLayout({ children, meta }) {
           font-weight: 700;
           font-size: 15px;
           text-decoration: none !important;
+        }
+        .blog-breadcrumb {
+          font-size: 13px;
+          color: #999;
+          margin-bottom: 20px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-wrap: wrap;
+        }
+        .blog-breadcrumb a {
+          color: #6a5a3a;
+          text-decoration: none;
+        }
+        .blog-breadcrumb a:hover {
+          color: #E8563A;
+          opacity: 1;
+        }
+        .blog-breadcrumb span {
+          color: #bbb;
         }
         @media (max-width: 600px) {
           .blog-nav-links {
@@ -263,6 +314,14 @@ export default function BlogLayout({ children, meta }) {
           padding: "60px 24px 80px",
         }}
       >
+        <nav aria-label="Breadcrumb" className="blog-breadcrumb">
+          <Link href="/">Home</Link>
+          <span>/</span>
+          <Link href="/blog">Blog</Link>
+          <span>/</span>
+          <span style={{ color: "#2d2d2d" }}>{title}</span>
+        </nav>
+
         <Link
           href="/blog"
           style={{
