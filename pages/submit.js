@@ -114,6 +114,9 @@ export default function SubmitRequest() {
       <Head>
         <title>Suggest a Feature — TrueStar</title>
         <meta name="description" content="Got an idea to make TrueStar better? Tell us — we read every request." />
+        <link rel="canonical" href="https://gettruestar.com/submit" />
+        <link rel="alternate" hreflang="en" href="https://gettruestar.com/submit" />
+        <link rel="alternate" hreflang="x-default" href="https://gettruestar.com/submit" />
         <link rel="icon" href="/icon128.png" />
         <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
       </Head>

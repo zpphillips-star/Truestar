@@ -211,6 +211,9 @@ export default function Roadmap({ byStatus }) {
       <Head>
         <title>Roadmap — TrueStar</title>
         <meta name="description" content="See what TrueStar is building, what has shipped, and vote on ideas you want most." />
+        <link rel="canonical" href="https://gettruestar.com/roadmap" />
+        <link rel="alternate" hreflang="en" href="https://gettruestar.com/roadmap" />
+        <link rel="alternate" hreflang="x-default" href="https://gettruestar.com/roadmap" />
         <link rel="icon" href="/icon128.png" />
         <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
       </Head>

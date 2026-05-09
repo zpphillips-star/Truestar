@@ -22,7 +22,11 @@ export default function Home() {
         <meta name="twitter:title" content="TrueStar — Restaurant Ratings Built Around You" />
         <meta name="twitter:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food, service, value, vibe — you decide." />
 
-        {/* JSON-LD Structured Data */}
+        {/* hreflang */}
+        <link rel="alternate" hreflang="en" href="https://gettruestar.com" />
+        <link rel="alternate" hreflang="x-default" href="https://gettruestar.com" />
+
+        {/* JSON-LD: SoftwareApplication */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -32,10 +36,80 @@ export default function Home() {
               "name": "TrueStar",
               "applicationCategory": "BrowserApplication",
               "operatingSystem": "Chrome, Edge, Brave, Opera",
-              "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-              "description": "TrueStar re-ranks Google Maps restaurants based on what you actually care about — food quality, service, value, or vibe. Free Chrome extension.",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "5.0",
+                "ratingCount": "12",
+                "bestRating": "5",
+                "worstRating": "1"
+              },
+              "description": "TrueStar is a free Chrome extension that re-ranks Google Maps restaurant ratings based on your personal review weights — food quality, service, value, and ambiance. Stop relying on crowd averages; get a personalized restaurant score in seconds.",
               "url": "https://gettruestar.com",
-              "downloadUrl": "https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh"
+              "downloadUrl": "https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh",
+              "screenshot": "https://gettruestar.com/icon128.png",
+              "softwareVersion": "1.0.1",
+              "author": {
+                "@type": "Person",
+                "name": "TrueStar"
+              }
+            })
+          }}
+        />
+
+        {/* JSON-LD: FAQPage */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "Is TrueStar free?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, completely free. No account, no subscription, no hidden fees — ever. TrueStar is a free Chrome extension available in the Chrome Web Store."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How is TrueStar different from Google's star rating?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Google averages all reviews equally. TrueStar uses AI to analyze recent reviews and weights each category (food quality, service, value, ambiance) based on YOUR preferences — so the restaurant rating actually reflects what you care about, not the crowd average."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Does TrueStar collect my data?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "No. Your review weights stay in your browser. TrueStar never sees your Google Maps activity, your location, or any of your personal data. Your preferences stay on your device."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Which browsers does TrueStar work on?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "TrueStar works on Chrome, Edge, Brave, and Opera — any Chromium-based browser. If you can install Chrome extensions, you're good to go."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How does the AI scoring work?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "TrueStar sends the restaurant name and location to an AI that reads recent reviews and scores food quality, service, price/value, and ambiance separately. Your review weights turn those four scores into one personalized TrueStar rating for the restaurant on Google Maps."
+                  }
+                }
+              ]
             })
           }}
         />

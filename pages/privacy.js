@@ -6,6 +6,10 @@ export default function Privacy() {
     <>
       <Head>
         <title>Privacy Policy — TrueStar</title>
+        <meta name="description" content="TrueStar's privacy policy. The free Chrome extension never collects your personal data — your review weights stay on your device." />
+        <link rel="canonical" href="https://gettruestar.com/privacy" />
+        <link rel="alternate" hreflang="en" href="https://gettruestar.com/privacy" />
+        <link rel="alternate" hreflang="x-default" href="https://gettruestar.com/privacy" />
         <link rel="icon" href="/icon128.png" />
       </Head>
 
