@@ -22,6 +22,9 @@ export default function Home() {
         <meta name="twitter:title" content="TrueStar — Restaurant Ratings Built Around You" />
         <meta name="twitter:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food, service, value, vibe — you decide." />
 
+        {/* IndexNow */}
+        <meta name="indexnow-key" content="a3f8b2e1d4c7960f5e2a1b3d8c4f7e09" />
+
         {/* hreflang */}
         <link rel="alternate" hreflang="en" href="https://gettruestar.com" />
         <link rel="alternate" hreflang="x-default" href="https://gettruestar.com" />
