@@ -460,11 +460,46 @@ function tsDisplayResults(data, totalReviews) {
       + '</div>';
   });
 
+  // ── Score breakdown ──────────────────────────────────────────────────────────
+  var activeBreakdown = TS_CATEGORIES.filter(function(c) {
+    return tsWeights[c.id] > 0 && data.categoryScores && data.categoryScores[c.id] != null;
+  });
+
+  var breakdownHtml = '';
+  if (activeBreakdown.length > 1) {
+    var rows = '<div class="ts-breakdown-row ts-breakdown-header">'
+      + '<span>Category</span>'
+      + '<span>Wt%</span>'
+      + '<span>Score</span>'
+      + '<span>Contrib</span>'
+      + '</div>';
+
+    activeBreakdown.forEach(function(c) {
+      var catScore = data.categoryScores[c.id];
+      var wt = tsWeights[c.id];
+      var contrib = (wt / 100) * catScore;
+      rows += '<div class="ts-breakdown-row">'
+        + '<span class="ts-breakdown-cat">' + c.emoji + ' ' + c.label + '</span>'
+        + '<span class="ts-breakdown-weight">' + wt + '%</span>'
+        + '<span class="ts-breakdown-score">' + catScore.toFixed(1) + '</span>'
+        + '<span class="ts-breakdown-contrib">+' + contrib.toFixed(2) + '</span>'
+        + '</div>';
+    });
+
+    breakdownHtml = '<button class="ts-breakdown-toggle" id="ts-breakdown-btn">▼ See breakdown</button>'
+      + '<div class="ts-breakdown" id="ts-breakdown">'
+      + rows
+      + '<div class="ts-breakdown-total">= ' + score.toFixed(2) + ' TrueStar Score</div>'
+      + '</div>';
+  }
+  // ────────────────────────────────────────────────────────────────────────────
+
   var html = '<div class="ts-score-block">'
     + '<div class="ts-big-score">' + score.toFixed(1) + '</div>'
     + '<div class="ts-stars">' + stars + '</div>'
     + '<div class="ts-score-label">TrueStar Score</div>'
     + (tsRestaurant.rating && tsRestaurant.rating !== '?' ? '<div class="ts-google-compare">vs. Google ' + tsRestaurant.rating + ' ★</div>' : '')
+    + breakdownHtml
     + '</div>'
     + '<div class="ts-headline">' + (data.headline || '') + '</div>'
     + '<div class="ts-count">' + (data.reviewsCounted || 0) + ' recent reviews address your preferences.</div>'
@@ -482,6 +517,16 @@ function tsDisplayResults(data, totalReviews) {
   }
 
   resultsEl.innerHTML = html;
+
+  // Wire up breakdown toggle
+  var bdBtn = document.getElementById('ts-breakdown-btn');
+  var bdPanel = document.getElementById('ts-breakdown');
+  if (bdBtn && bdPanel) {
+    bdBtn.addEventListener('click', function() {
+      var expanded = bdPanel.classList.toggle('ts-expanded');
+      bdBtn.textContent = expanded ? '▲ Hide breakdown' : '▼ See breakdown';
+    });
+  }
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
