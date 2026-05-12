@@ -3,6 +3,42 @@ import Link from "next/link";
 
 const POSTS = [
   {
+    slug: "best-way-to-discover-local-restaurants",
+    title: "The Best Way to Discover Local Restaurants You'll Actually Love",
+    description:
+      "Skip the top-10 lists and tourist traps. The best way to discover great local restaurants is to go deeper than the star average — here's exactly how.",
+    date: "May 12, 2026",
+    readingTime: "5 min read",
+    tag: "Tips & Tricks",
+  },
+  {
+    slug: "how-to-filter-restaurants-by-price-and-rating",
+    title: "How to Filter Restaurants by Price and Rating on Google Maps",
+    description:
+      "Google Maps has price and rating filters — but they're blunter than most people realize. Here's how to use them effectively, and what to do when they fall short.",
+    date: "May 12, 2026",
+    readingTime: "5 min read",
+    tag: "Tips & Tricks",
+  },
+  {
+    slug: "why-google-maps-ratings-are-misleading",
+    title: "Why Google Maps Ratings Are Misleading (And What to Use Instead)",
+    description:
+      "A 4.3★ on Google Maps sounds reliable — but it might be counting parking complaints, birthday-party euphoria, and reviews from 2019. Here's why the number misleads you, and what works better.",
+    date: "May 12, 2026",
+    readingTime: "5 min read",
+    tag: "Deep Dive",
+  },
+  {
+    slug: "how-to-find-hidden-gem-restaurants",
+    title: "How to Find Hidden Gem Restaurants (Before Everyone Else Does)",
+    description:
+      "The best restaurants in your city probably don't have thousands of Google Maps reviews. Here's a practical guide to discovering underrated local spots before they blow up.",
+    date: "May 12, 2026",
+    readingTime: "5 min read",
+    tag: "Tips & Tricks",
+  },
+  {
     slug: "chrome-extensions-for-foodies",
     title: "The Best Chrome Extensions for Foodies in 2026",
     description:
