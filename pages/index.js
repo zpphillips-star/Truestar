@@ -5,7 +5,7 @@ export default function Home() {
     <>
       <Head>
         <title>TrueStar — Restaurant Ratings Built Around You</title>
-        <meta name="description" content="TrueStar re-ranks Google Maps restaurants based on what YOU care about — food quality, service, value, vibe. Free Chrome extension." />
+        <meta name="description" content="TrueStar gives you personalized restaurant ratings on Google Maps — re-weighted by food quality, service, value, and vibe. Free Chrome extension." />
         <meta name="keywords" content="google maps ratings, restaurant finder, chrome extension, food ratings, personalized restaurant scores" />
         <link rel="canonical" href="https://gettruestar.com" />
 
@@ -178,8 +178,8 @@ export default function Home() {
           </div>
 
           <h1 style={{ fontSize: 52, fontWeight: 900, lineHeight: 1.1, marginBottom: 20, letterSpacing: -1 }}>
-            Restaurant ratings built<br />
-            <span style={{ color: "#E8563A" }}>around you.</span>
+            Personalized restaurant ratings<br />
+            <span style={{ color: "#E8563A" }}>built around you.</span>
           </h1>
 
           <p style={{ fontSize: 19, color: "#555", lineHeight: 1.6, marginBottom: 36 }}>
@@ -238,16 +238,117 @@ export default function Home() {
           <p style={{ color: "#888", marginBottom: 48, fontSize: 16 }}>Three steps. Zero sign-up.</p>
           <div style={{ display: "flex", gap: 32, justifyContent: "center", flexWrap: "wrap" }}>
             {[
-              { n: "1", title: "Open Google Maps", body: "Browse restaurants like normal. TrueStar quietly activates on any Google Maps page." },
-              { n: "2", title: "Set your priorities", body: "Dial in what matters to you — food, service, value, vibe. Weights must add up to 100%." },
-              { n: "3", title: "Get your real score", body: "AI reads the freshest reviews and scores the restaurant your way. In seconds." },
+              { emoji: "🧩", title: "Install TrueStar", body: "Add TrueStar to Chrome, Edge, Brave, or Opera in one click. No account required." },
+              { emoji: "⚖️", title: "Set your weights", body: "Dial in what matters — food quality, service, value, vibe. Your preferences, your call." },
+              { emoji: "⭐", title: "Get your real score", body: "AI reads the freshest reviews and scores the restaurant your way. Personalized. In seconds." },
             ].map((s) => (
-              <div key={s.n} style={{ flex: "1 1 220px", maxWidth: 260, textAlign: "left" }}>
-                <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#E8563A", color: "#fff", fontWeight: 900, fontSize: 20, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                  {s.n}
+              <div key={s.emoji} style={{ flex: "1 1 220px", maxWidth: 260, textAlign: "left" }}>
+                <div style={{ width: 52, height: 52, borderRadius: "50%", background: "#FFF3E0", border: "2px solid #E8563A", fontSize: 26, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                  {s.emoji}
                 </div>
                 <h3 style={{ fontWeight: 700, fontSize: 17, marginBottom: 8 }}>{s.title}</h3>
                 <p style={{ color: "#666", fontSize: 15, lineHeight: 1.6 }}>{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Persona strip */}
+        <section style={{ background: "#1C2438", padding: "72px 24px", textAlign: "center" }}>
+          <h2 style={{ fontSize: 32, fontWeight: 900, color: "#F4EFE6", marginBottom: 12 }}>Find your dining style</h2>
+          <p style={{ color: "#9AA3B5", fontSize: 16, marginBottom: 48 }}>Everyone eats differently. TrueStar adapts to all of them.</p>
+          <div style={{ display: "flex", gap: 20, justifyContent: "center", flexWrap: "wrap", maxWidth: 1080, margin: "0 auto" }}>
+            {[
+              {
+                icon: "🍽️",
+                name: "The Foodie",
+                weights: [
+                  { label: "Food", pct: 70, color: "#E8563A" },
+                  { label: "Service", pct: 10, color: "#F4A261" },
+                  { label: "Value", pct: 10, color: "#2A9D8F" },
+                  { label: "Vibe", pct: 10, color: "#457B9D" },
+                ],
+              },
+              {
+                icon: "💑",
+                name: "Date Night",
+                weights: [
+                  { label: "Vibe", pct: 40, color: "#457B9D" },
+                  { label: "Food", pct: 35, color: "#E8563A" },
+                  { label: "Service", pct: 20, color: "#F4A261" },
+                  { label: "Value", pct: 5, color: "#2A9D8F" },
+                ],
+              },
+              {
+                icon: "💼",
+                name: "Business Lunch",
+                weights: [
+                  { label: "Service", pct: 40, color: "#F4A261" },
+                  { label: "Food", pct: 30, color: "#E8563A" },
+                  { label: "Value", pct: 20, color: "#2A9D8F" },
+                  { label: "Vibe", pct: 10, color: "#457B9D" },
+                ],
+              },
+              {
+                icon: "🎒",
+                name: "Budget Traveler",
+                weights: [
+                  { label: "Value", pct: 55, color: "#2A9D8F" },
+                  { label: "Food", pct: 30, color: "#E8563A" },
+                  { label: "Service", pct: 10, color: "#F4A261" },
+                  { label: "Vibe", pct: 5, color: "#457B9D" },
+                ],
+              },
+              {
+                icon: "👨‍👩‍👧‍👦",
+                name: "Family Dinner",
+                weights: [
+                  { label: "Value", pct: 30, color: "#2A9D8F" },
+                  { label: "Food", pct: 30, color: "#E8563A" },
+                  { label: "Service", pct: 25, color: "#F4A261" },
+                  { label: "Vibe", pct: 15, color: "#457B9D" },
+                ],
+              },
+            ].map((p) => (
+              <div
+                key={p.name}
+                style={{
+                  flex: "1 1 180px",
+                  maxWidth: 200,
+                  background: "#252E44",
+                  border: "1px solid #2E3A54",
+                  borderRadius: 16,
+                  padding: "28px 20px",
+                  textAlign: "left",
+                }}
+              >
+                <div style={{ fontSize: 32, marginBottom: 12 }}>{p.icon}</div>
+                <div style={{ fontWeight: 800, fontSize: 15, color: "#F4EFE6", marginBottom: 16 }}>{p.name}</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  {p.weights.map((w) => (
+                    <div key={w.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div
+                        style={{
+                          background: w.color + "22",
+                          border: `1px solid ${w.color}`,
+                          borderRadius: 6,
+                          padding: "2px 8px",
+                          fontSize: 11,
+                          fontWeight: 700,
+                          color: w.color,
+                          minWidth: 52,
+                          textAlign: "center",
+                        }}
+                      >
+                        {w.label}
+                      </div>
+                      <div style={{ flex: 1, height: 4, background: "#2E3A54", borderRadius: 2 }}>
+                        <div style={{ width: `${w.pct}%`, height: "100%", background: w.color, borderRadius: 2 }} />
+                      </div>
+                      <span style={{ fontSize: 11, color: "#9AA3B5", minWidth: 28, textAlign: "right" }}>{w.pct}%</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>
