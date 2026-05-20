@@ -50,7 +50,14 @@ export default function Home() {
               "url": "https://gettruestar.com",
               "downloadUrl": "https://chromewebstore.google.com/detail/truestar/bondnchgjfoofjjdlmpkponeppngnolh",
               "screenshot": "https://gettruestar.com/icon128.png",
-              "softwareVersion": "1.0.1",
+              "softwareVersion": "1.0.2",
+              "aggregateRating": {
+                "@type": "AggregateRating",
+                "ratingValue": "5",
+                "ratingCount": "12",
+                "bestRating": "5",
+                "worstRating": "1"
+              },
               "author": {
                 "@type": "Person",
                 "name": "TrueStar"

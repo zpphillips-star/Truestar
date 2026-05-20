@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "TrueStar",
   "version": "1.0.2",
-  "description": "Your preferences. Your rating. Re-rank any restaurant on Google Maps.",
+  "description": "Personalized restaurant ratings on Google Maps. Re-rank by food quality, service, value, and ambiance — your priorities, not the crowd average. Free.",
   "permissions": ["storage"],
   "host_permissions": [
     "https://www.google.com/maps/*",

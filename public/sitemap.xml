@@ -1,8 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://gettruestar.com/</loc><priority>1.0</priority></url>
-  <url><loc>https://gettruestar.com/compare</loc><priority>0.8</priority></url>
-  <url><loc>https://gettruestar.com/roadmap</loc><priority>0.7</priority></url>
-  <url><loc>https://gettruestar.com/submit</loc><priority>0.6</priority></url>
-  <url><loc>https://gettruestar.com/privacy</loc><priority>0.3</priority></url>
+  <url><loc>https://gettruestar.com/</loc><lastmod>2026-06-01</lastmod><priority>1.0</priority></url>
+  <url><loc>https://gettruestar.com/blog</loc><lastmod>2026-06-01</lastmod><priority>0.9</priority></url>
+  <url><loc>https://gettruestar.com/compare</loc><lastmod>2026-05-01</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/use-cases</loc><lastmod>2026-05-01</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/roadmap</loc><lastmod>2026-05-01</lastmod><priority>0.7</priority></url>
+  <url><loc>https://gettruestar.com/submit</loc><lastmod>2026-05-01</lastmod><priority>0.6</priority></url>
+  <url><loc>https://gettruestar.com/privacy</loc><lastmod>2026-05-01</lastmod><priority>0.3</priority></url>
+  <!-- Blog posts -->
+  <url><loc>https://gettruestar.com/blog/how-to-discover-new-restaurants-in-your-city</loc><lastmod>2026-06-01</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/google-maps-vs-yelp-which-is-better</loc><lastmod>2026-06-01</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/how-to-find-cheap-eats-near-me</loc><lastmod>2026-06-01</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/best-restaurants-for-business-lunch</loc><lastmod>2026-06-01</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/best-way-to-discover-local-restaurants</loc><lastmod>2026-05-12</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/how-to-filter-restaurants-by-price-and-rating</loc><lastmod>2026-05-12</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/why-google-maps-ratings-are-misleading</loc><lastmod>2026-05-12</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/how-to-find-hidden-gem-restaurants</loc><lastmod>2026-05-12</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/chrome-extensions-for-foodies</loc><lastmod>2026-05-09</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/yelp-vs-google-maps-reviews</loc><lastmod>2026-05-09</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/best-restaurants-near-me-tips</loc><lastmod>2026-05-09</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/how-to-find-good-restaurants-google-maps</loc><lastmod>2026-05-07</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/are-google-maps-ratings-accurate</loc><lastmod>2026-05-05</lastmod><priority>0.8</priority></url>
+  <url><loc>https://gettruestar.com/blog/best-chrome-extensions-for-google-maps</loc><lastmod>2026-05-02</lastmod><priority>0.8</priority></url>
 </urlset>

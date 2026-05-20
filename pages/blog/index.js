@@ -3,6 +3,42 @@ import Link from "next/link";
 
 const POSTS = [
   {
+    slug: "how-to-discover-new-restaurants-in-your-city",
+    title: "How to Discover New Restaurants in Your City (That Actually Match Your Taste)",
+    description:
+      "Most restaurant discovery tools optimize for popularity, not fit. Here's a practical guide to finding new spots in your city that match your specific taste — not the crowd's.",
+    date: "June 1, 2026",
+    readingTime: "5 min read",
+    tag: "Tips & Tricks",
+  },
+  {
+    slug: "google-maps-vs-yelp-which-is-better",
+    title: "Google Maps vs Yelp: Which Is Better for Finding Restaurants in 2026?",
+    description:
+      "Google Maps and Yelp both claim to help you find great restaurants — but they work very differently and each has real blind spots. Here's an honest breakdown of which one to use, and when.",
+    date: "June 1, 2026",
+    readingTime: "5 min read",
+    tag: "Deep Dive",
+  },
+  {
+    slug: "how-to-find-cheap-eats-near-me",
+    title: "How to Find Cheap Eats Near Me Without Sacrificing Quality",
+    description:
+      "Searching for cheap eats near you? Price filters on Google Maps miss half the picture. Here's how to find genuinely good budget restaurants — using the tools most people overlook.",
+    date: "June 1, 2026",
+    readingTime: "5 min read",
+    tag: "Tips & Tricks",
+  },
+  {
+    slug: "best-restaurants-for-business-lunch",
+    title: "The Best Restaurants for a Business Lunch (And How to Find Them Fast)",
+    description:
+      "Planning a business lunch? You need reliable food, quick service, and a professional atmosphere — not a gamble on a 4.3-star average. Here's how to find the right spot every time.",
+    date: "June 1, 2026",
+    readingTime: "5 min read",
+    tag: "Tips & Tricks",
+  },
+  {
     slug: "best-way-to-discover-local-restaurants",
     title: "The Best Way to Discover Local Restaurants You'll Actually Love",
     description:
