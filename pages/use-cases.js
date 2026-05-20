@@ -349,7 +349,9 @@ export default function UseCases() {
         {/* Open Graph */}
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDesc} />
-        <meta property="og:image" content="https://gettruestar.com/icon128.png" />
+        <meta property="og:image" content="https://gettruestar.com/og-use-cases.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
         <meta property="og:url" content={pageUrl} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="TrueStar" />
@@ -358,7 +360,7 @@ export default function UseCases() {
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={pageTitle} />
         <meta name="twitter:description" content={pageDesc} />
-        <meta name="twitter:image" content="https://gettruestar.com/icon128.png" />
+        <meta name="twitter:image" content="https://gettruestar.com/og-use-cases.png" />
 
         {/* hreflang */}
         <link rel="alternate" hreflang="en" href={pageUrl} />

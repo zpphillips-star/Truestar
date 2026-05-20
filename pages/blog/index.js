@@ -151,7 +151,7 @@ export default function BlogIndex() {
         <meta property="og:url" content={`${SITE_URL}/blog`} />
         <meta property="og:type" content="website" />
         <meta property="og:site_name" content="TrueStar" />
-        <meta property="og:image" content={`${SITE_URL}/og-image.png`} />
+        <meta property="og:image" content={`${SITE_URL}/og-blog.png`} />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
 
@@ -161,7 +161,7 @@ export default function BlogIndex() {
           name="twitter:description"
           content="Tips, deep dives, and tools to help you find great restaurants and get more out of Google Maps."
         />
-        <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
+        <meta name="twitter:image" content={`${SITE_URL}/og-blog.png`} />
 
         <link rel="icon" href="/icon128.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />

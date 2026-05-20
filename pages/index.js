@@ -12,7 +12,7 @@ export default function Home() {
         {/* Open Graph */}
         <meta property="og:title" content="TrueStar — Restaurant Ratings Built Around You" />
         <meta property="og:description" content="Re-rank any restaurant on Google Maps based on your priorities. Food, service, value, vibe — you decide." />
-        <meta property="og:image" content="https://gettruestar.com/og-image.png" />
+        <meta property="og:image" content="https://gettruestar.com/og-home.png" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:url" content="https://gettruestar.com" />

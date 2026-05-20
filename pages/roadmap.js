@@ -214,6 +214,23 @@ export default function Roadmap({ byStatus }) {
         <link rel="canonical" href="https://gettruestar.com/roadmap" />
         <link rel="alternate" hreflang="en" href="https://gettruestar.com/roadmap" />
         <link rel="alternate" hreflang="x-default" href="https://gettruestar.com/roadmap" />
+
+        {/* Open Graph */}
+        <meta property="og:title" content="Roadmap — TrueStar" />
+        <meta property="og:description" content="See what TrueStar is building, what has shipped, and vote on ideas you want most." />
+        <meta property="og:image" content="https://gettruestar.com/og-roadmap.png" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:url" content="https://gettruestar.com/roadmap" />
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="TrueStar" />
+
+        {/* Twitter Card */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="Roadmap — TrueStar" />
+        <meta name="twitter:description" content="See what TrueStar is building, what has shipped, and vote on ideas you want most." />
+        <meta name="twitter:image" content="https://gettruestar.com/og-roadmap.png" />
+
         <link rel="icon" href="/icon128.png" />
         <link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap" rel="stylesheet" />
       </Head>
