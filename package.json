@@ -4,11 +4,17 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "node scripts/ping-indexnow.js",
     "start": "next start"
   },
   "dependencies": {
     "next": "14.0.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
+  },
+  "devDependencies": {
+    "canvas": "^3.2.3",
+    "jimp": "^1.6.1",
+    "sharp": "^0.34.5"
   }
 }
